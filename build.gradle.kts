@@ -29,6 +29,7 @@ dependencies {
 	implementation("jakarta.annotation:jakarta.annotation-api")
 	implementation("org.openapitools:jackson-databind-nullable:0.2.6")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 	developmentOnly("org.springframework.boot:spring-boot-docker-compose")
