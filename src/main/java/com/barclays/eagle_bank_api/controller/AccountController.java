@@ -13,28 +13,30 @@ import org.springframework.web.server.ResponseStatusException;
 @RestController
 public class AccountController implements AccountApi {
 
-    @Override
-    public ResponseEntity<BankAccountResponse> createAccount(CreateBankAccountRequest createBankAccountRequest) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Not implemented");
-    }
+  @Override
+  public ResponseEntity<BankAccountResponse> createAccount(
+      CreateBankAccountRequest createBankAccountRequest) {
+    throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Not implemented");
+  }
 
-    @Override
-    public ResponseEntity<Void> deleteAccountByAccountNumber(String accountNumber) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Not implemented");
-    }
+  @Override
+  public ResponseEntity<Void> deleteAccountByAccountNumber(String accountNumber) {
+    throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Not implemented");
+  }
 
-    @Override
-    public ResponseEntity<BankAccountResponse> fetchAccountByAccountNumber(String accountNumber) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Not implemented");
-    }
+  @Override
+  public ResponseEntity<BankAccountResponse> fetchAccountByAccountNumber(String accountNumber) {
+    throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Not implemented");
+  }
 
-    @Override
-    public ResponseEntity<ListBankAccountsResponse> listAccounts() {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Not implemented");
-    }
+  @Override
+  public ResponseEntity<ListBankAccountsResponse> listAccounts() {
+    throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Not implemented");
+  }
 
-    @Override
-    public ResponseEntity<BankAccountResponse> updateAccountByAccountNumber(String accountNumber, UpdateBankAccountRequest updateBankAccountRequest) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Not implemented");
-    }
+  @Override
+  public ResponseEntity<BankAccountResponse> updateAccountByAccountNumber(
+      String accountNumber, UpdateBankAccountRequest updateBankAccountRequest) {
+    throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Not implemented");
+  }
 }

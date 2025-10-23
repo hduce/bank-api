@@ -4,6 +4,15 @@ plugins {
 	id("io.spring.dependency-management") version "1.1.7"
 	id("org.openapi.generator") version "7.10.0"
 	id("io.freefair.lombok") version "9.0.0"
+    // spotless
+    id("com.diffplug.spotless") version "8.0.0"
+
+}
+
+spotless {
+    java {
+        googleJavaFormat()
+    }
 }
 
 group = "com.barclays"
@@ -34,7 +43,8 @@ dependencies {
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 	developmentOnly("org.springframework.boot:spring-boot-docker-compose")
-	runtimeOnly("org.postgresql:postgresql")
+    developmentOnly("com.google.googlejavaformat:google-java-format:1.30.0")
+    runtimeOnly("org.postgresql:postgresql")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.springframework.boot:spring-boot-testcontainers")
 	testImplementation("org.springframework.security:spring-security-test")
