@@ -2,12 +2,14 @@ package com.barclays.eagle_bank_api.service;
 
 import com.barclays.eagle_bank_api.entity.Address;
 import com.barclays.eagle_bank_api.entity.User;
+import com.barclays.eagle_bank_api.exception.UserAlreadyExistsException;
 import com.barclays.eagle_bank_api.model.CreateUserRequest;
 import com.barclays.eagle_bank_api.repository.UserRepository;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AuthService {
@@ -31,7 +33,12 @@ public class AuthService {
     return userRepository.findByEmail(email).orElseThrow();
   }
 
+  @Transactional
   public User register(CreateUserRequest createUserRequest) {
+    if (userRepository.existsByEmail(createUserRequest.getEmail())) {
+      throw new UserAlreadyExistsException(createUserRequest.getEmail());
+    }
+
     var requestAddress = createUserRequest.getAddress();
     var address =
         new Address(
