@@ -1,12 +1,12 @@
 package com.barclays.eagle_bank_api.service;
 
+import com.barclays.eagle_bank_api.entity.User;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import java.security.Key;
 import java.util.Date;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -20,10 +20,10 @@ public class JwtService {
     this.signingKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
   }
 
-  public String generateToken(UserDetails userDetails) {
+  public String generateToken(User user) {
     return Jwts.builder()
         .signWith(signingKey)
-        .subject(userDetails.getUsername())
+        .subject(user.getId())
         .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
         .compact();
   }

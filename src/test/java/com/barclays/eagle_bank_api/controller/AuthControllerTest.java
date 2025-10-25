@@ -52,6 +52,8 @@ class AuthControllerTest {
       var createResponse =
           restTemplate.postForEntity("/v1/users", createRequest, UserResponse.class);
       assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+      var createResponseBody = createResponse.getBody();
+      assertThat(createResponseBody).isNotNull();
 
       var loginRequest =
           new LoginRequest().email(createRequest.getEmail()).password(createRequest.getPassword());
@@ -71,7 +73,7 @@ class AuthControllerTest {
       var claims = Jwts.parser().verifyWith(signingKey).build().parseSignedClaims(token);
 
       // Verify token claims
-      assertThat(claims.getPayload().getSubject()).isEqualTo("john.doe@example.com");
+      assertThat(claims.getPayload().getSubject()).isEqualTo(createResponseBody.getId());
       assertThat(claims.getPayload().getExpiration()).isAfter(Date.from(Instant.now()));
       assertThat(claims.getPayload().getExpiration())
           .isBeforeOrEqualTo(Date.from(Instant.now().plusMillis(jwtExpirationMs + 1000)));
