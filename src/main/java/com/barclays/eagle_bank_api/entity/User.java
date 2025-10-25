@@ -2,12 +2,16 @@ package com.barclays.eagle_bank_api.entity;
 
 import jakarta.persistence.*;
 import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
 @Table(name = "users")
@@ -15,7 +19,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+public class User implements UserDetails {
 
   @Id
   @Column(name = "id", nullable = false)
@@ -42,4 +46,14 @@ public class User {
   @UpdateTimestamp
   @Column(name = "updated_timestamp", nullable = false)
   private OffsetDateTime updatedTimestamp;
+
+  @Override
+  public Collection<? extends GrantedAuthority> getAuthorities() {
+    return List.of();
+  }
+
+  @Override
+  public String getUsername() {
+    return email;
+  }
 }

@@ -11,7 +11,47 @@ tags:
     description: Manage transactions on a bank account
   - name: user
     description: Manage a user
+  - name: auth
+    description: Authentication
 paths:
+  /v1/auth/login:
+    post:
+      tags:
+        - auth
+      description: Authenticate a user and return a JWT token
+      operationId: login
+      requestBody:
+        description: User credentials
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      responses:
+        '200':
+          description: Successfully authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Invalid credentials supplied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestErrorResponse"
+        '401':
+          description: Invalid email or password
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        '500':
+          description: An unexpected error occurred
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /v1/accounts:
     post:
       tags:
@@ -19,7 +59,7 @@ paths:
       description: Create a new bank account
       operationId: createAccount
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       requestBody:
         description: Create a new bank account for the user
         content:
@@ -64,7 +104,7 @@ paths:
       description: List accounts
       operationId: listAccounts
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       responses:
         '200':
           description: The list of bank accounts
@@ -99,7 +139,7 @@ paths:
             type: string
             pattern: ^01\d{6}$
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       responses:
         '200':
           description: The bank account details
@@ -151,7 +191,7 @@ paths:
             type: string
             pattern: ^01\d{6}$
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       requestBody:
         description: Update bank account details for the user
         content:
@@ -210,7 +250,7 @@ paths:
             type: string
             pattern: ^01\d{6}$
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       responses:
         '204':
           description: The bank account has been deleted
@@ -267,7 +307,7 @@ paths:
               $ref: '#/components/schemas/CreateTransactionRequest'
         required: true
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       responses:
         '201':
           description: Transaction has been created successfully
@@ -325,7 +365,7 @@ paths:
             type: string
             pattern: ^01\d{6}$
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       responses:
         '200':
           description: The list of transaction details
@@ -385,7 +425,7 @@ paths:
             type: string
             pattern: ^tan-[A-Za-z0-9]$
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       responses:
         '200':
           description: The transaction details
@@ -466,7 +506,7 @@ paths:
             type: string
             pattern: ^usr-[A-Za-z0-9]+$
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       responses:
         '200':
           description: The user details
@@ -518,7 +558,7 @@ paths:
             type: string
             pattern: ^usr-[A-Za-z0-9]+$
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       requestBody:
         description: Update user details
         content:
@@ -577,7 +617,7 @@ paths:
             type: string
             pattern: ^usr-[A-Za-z0-9]+$
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       responses:
         '204':
           description: The user has been deleted
@@ -632,7 +672,7 @@ components:
             - "My Account"
         accountType:
           type: string
-          enum: 
+          enum:
             - "personal"
     UpdateBankAccountRequest:
       type: object
@@ -644,7 +684,7 @@ components:
             - "My Account"
         accountType:
           type: string
-          enum: 
+          enum:
             - "personal"
     ListBankAccountsResponse:
       type: object
@@ -654,7 +694,7 @@ components:
         accounts:
           type: array
           items:
-             $ref: "#/components/schemas/BankAccountResponse"
+            $ref: "#/components/schemas/BankAccountResponse"
     BankAccountResponse:
       type: object
       required:
@@ -675,13 +715,13 @@ components:
             - "01765432"
         sortCode:
           type: string
-          enum: 
+          enum:
             - "10-10-10"
         name:
           type: string
         accountType:
           type: string
-          enum: 
+          enum:
             - "personal"
         balance:
           type: number
@@ -724,7 +764,7 @@ components:
             - "GBP"
         type:
           type: string
-          enum: 
+          enum:
             - "deposit"
             - "withdrawal"
         reference:
@@ -737,7 +777,7 @@ components:
         transactions:
           type: array
           items:
-             $ref: "#/components/schemas/TransactionResponse"
+            $ref: "#/components/schemas/TransactionResponse"
     TransactionResponse:
       type: object
       required:
@@ -747,7 +787,7 @@ components:
         - type
         - createdTimestamp
       properties:
-        id: 
+        id:
           type: string
           pattern: ^tan-[A-Za-z0-9]$
           examples:
@@ -763,7 +803,7 @@ components:
             - "GBP"
         type:
           type: string
-          enum: 
+          enum:
             - "deposit"
             - "withdrawal"
         reference:
@@ -771,11 +811,31 @@ components:
         userId:
           type: string
           format: ^usr-[A-Za-z0-9]+$
-          examples: 
+          examples:
             - usr-abc123
         createdTimestamp:
           type: string
           format: 'date-time'
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+    LoginResponse:
+      type: object
+      required:
+        - token
+      properties:
+        token:
+          type: string
+          description: JWT authentication token
     CreateUserRequest:
       type: object
       required:
@@ -783,6 +843,7 @@ components:
         - address
         - phoneNumber
         - email
+        - password
       properties:
         name:
           type: string
@@ -813,7 +874,11 @@ components:
           format: ^\+[1-9]\d{1,14}$
         email:
           type: string
-          format: email    
+          format: email
+        password:
+          type: string
+          format: password
+          description: User password
     UpdateUserRequest:
       type: object
       properties:
