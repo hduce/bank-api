@@ -24,12 +24,12 @@ public class JwtProvider {
   public String generateToken(User user) {
     return Jwts.builder()
         .signWith(signingKey)
-        .subject(user.getUsername())
+        .subject(user.getId())
         .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
         .compact();
   }
 
-  public String extractUserEmail(String token) {
+  public String extractUserId(String token) {
     return Jwts.parser()
         .verifyWith((SecretKey) signingKey)
         .build()

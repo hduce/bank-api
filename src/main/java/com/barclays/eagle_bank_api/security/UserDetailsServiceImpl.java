@@ -1,4 +1,4 @@
-package com.barclays.eagle_bank_api.service;
+package com.barclays.eagle_bank_api.security;
 
 import com.barclays.eagle_bank_api.entity.User;
 import com.barclays.eagle_bank_api.repository.UserRepository;

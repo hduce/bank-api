@@ -73,7 +73,7 @@ class AuthControllerTest {
       var claims = Jwts.parser().verifyWith(signingKey).build().parseSignedClaims(token);
 
       // Verify token claims
-      assertThat(claims.getPayload().getSubject()).isEqualTo(createResponseBody.getEmail());
+      assertThat(claims.getPayload().getSubject()).isEqualTo(createResponseBody.getId());
       assertThat(claims.getPayload().getExpiration()).isAfter(Date.from(Instant.now()));
       assertThat(claims.getPayload().getExpiration())
           .isBeforeOrEqualTo(Date.from(Instant.now().plusMillis(jwtExpirationMs + 1000)));

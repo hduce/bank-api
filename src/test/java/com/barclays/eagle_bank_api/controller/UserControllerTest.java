@@ -375,5 +375,27 @@ class UserControllerTest {
       var unchangedUser = userRepository.findById(user.getId()).orElseThrow();
       assertThat(unchangedUser.getName()).isEqualTo("Test User");
     }
+
+    @Test
+    void shouldFailToUpdateUserWhenEmailAlreadyExists() {
+      // Given
+      final var user1 = createAndSaveUser("user@gmail.com");
+      final var user2 = createAndSaveUser("otheruser@gmail.com");
+      final var updateRequest = new UpdateUserRequest().email(user1.getEmail());
+
+      // When
+      final var response =
+          restTemplate.exchange(
+              "/v1/users/" + user2.getId(),
+              HttpMethod.PATCH,
+              new HttpEntity<>(updateRequest, createAuthHeaders(user2)),
+              String.class);
+
+      // Then
+      assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+      // Verify user2's email was NOT updated
+      final var unchangedUser = userRepository.findById(user2.getId()).orElseThrow();
+      assertThat(unchangedUser.getEmail()).isEqualTo("otheruser@gmail.com");
+    }
   }
 }

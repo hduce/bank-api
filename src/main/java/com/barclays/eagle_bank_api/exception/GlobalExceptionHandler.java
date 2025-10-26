@@ -15,4 +15,19 @@ public class GlobalExceptionHandler {
     error.setMessage(ex.getMessage());
     return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
   }
+
+  @ExceptionHandler(UserNotFoundException.class)
+  public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex) {
+    var error = new ErrorResponse();
+    error.setMessage(ex.getMessage());
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+  }
+
+  @ExceptionHandler(UserEmailAlreadyExistsException.class)
+  public ResponseEntity<ErrorResponse> handleUserEmailAlreadyExists(
+      UserEmailAlreadyExistsException ex) {
+    var error = new ErrorResponse();
+    error.setMessage(ex.getMessage());
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+  }
 }
