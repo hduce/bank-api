@@ -12,7 +12,6 @@ import com.barclays.eagle_bank_api.service.AuthService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -74,9 +73,5 @@ public class UserController implements UserApi {
         .town(address.town())
         .county(address.county())
         .postcode(address.postcode());
-  }
-
-  private User getAuthenticatedUser() {
-    return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
   }
 }
