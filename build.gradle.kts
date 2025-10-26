@@ -108,7 +108,6 @@ tasks.register("installGitHooks") {
             #!/bin/sh
             echo "Running pre-commit checks..."
             ./gradlew spotlessCheck || { echo "❌ Spotless check failed. Run './gradlew spotlessApply'"; exit 1; }
-            ./gradlew test || { echo "❌ Tests failed"; exit 1; }
             ./gradlew check || { echo "❌ Checks failed"; exit 1; }
             echo "✅ All pre-commit checks passed!"
         """.trimIndent()
