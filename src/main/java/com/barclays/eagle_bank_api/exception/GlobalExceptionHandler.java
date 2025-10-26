@@ -1,8 +1,13 @@
 package com.barclays.eagle_bank_api.exception;
 
+import com.barclays.eagle_bank_api.model.BadRequestErrorResponse;
+import com.barclays.eagle_bank_api.model.BadRequestErrorResponseDetailsInner;
 import com.barclays.eagle_bank_api.model.ErrorResponse;
+import java.util.ArrayList;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -29,5 +34,50 @@ public class GlobalExceptionHandler {
     var error = new ErrorResponse();
     error.setMessage(ex.getMessage());
     return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+  }
+
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity<BadRequestErrorResponse> handleValidationErrors(
+      MethodArgumentNotValidException ex) {
+    var details = new ArrayList<BadRequestErrorResponseDetailsInner>();
+
+    ex.getBindingResult()
+        .getFieldErrors()
+        .forEach(
+            error -> {
+              var detail = new BadRequestErrorResponseDetailsInner();
+              detail.setField(error.getField());
+              detail.setMessage(error.getDefaultMessage());
+              detail.setType("validation_error");
+              details.add(detail);
+            });
+
+    var response = new BadRequestErrorResponse();
+    response.setMessage("Request validation failed");
+    response.setDetails(details);
+
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+  }
+
+  @ExceptionHandler(HttpMessageNotReadableException.class)
+  public ResponseEntity<BadRequestErrorResponse> handleMessageNotReadable(
+      HttpMessageNotReadableException ex) {
+    var response = new BadRequestErrorResponse();
+    response.setMessage("Malformed JSON request");
+    var detail = new BadRequestErrorResponseDetailsInner();
+    detail.setField("request_body");
+    detail.setMessage(ex.getMostSpecificCause().getMessage());
+    detail.setType("malformed_json");
+    response.getDetails().add(detail);
+
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+  }
+
+  @ExceptionHandler(AccountNumberGenerationException.class)
+  public ResponseEntity<ErrorResponse> handleAccountNumberGeneration(
+      AccountNumberGenerationException ex) {
+    var error = new ErrorResponse();
+    error.setMessage(ex.getMessage());
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
   }
 }

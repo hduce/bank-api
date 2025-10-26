@@ -32,7 +32,7 @@ public class UserService {
       user.setName(updateRequest.getName());
     }
 
-    if (updateRequest.getEmail() != null) {
+    if (emailIsUpdated(updateRequest, user)) {
       if (userRepository.existsByEmail(updateRequest.getEmail())) {
         throw new UserEmailAlreadyExistsException(updateRequest.getEmail());
       }
@@ -48,5 +48,9 @@ public class UserService {
     }
 
     return userRepository.save(user);
+  }
+
+  private static boolean emailIsUpdated(UpdateUserRequest updateRequest, User user) {
+    return updateRequest.getEmail() != null && !updateRequest.getEmail().equals(user.getEmail());
   }
 }

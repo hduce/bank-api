@@ -3,14 +3,12 @@ package com.barclays.eagle_bank_api.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.barclays.eagle_bank_api.TestcontainersConfiguration;
-import com.barclays.eagle_bank_api.entity.Address;
 import com.barclays.eagle_bank_api.entity.User;
 import com.barclays.eagle_bank_api.model.CreateUserRequest;
 import com.barclays.eagle_bank_api.model.CreateUserRequestAddress;
 import com.barclays.eagle_bank_api.model.UpdateUserRequest;
 import com.barclays.eagle_bank_api.model.UserResponse;
 import com.barclays.eagle_bank_api.repository.UserRepository;
-import com.barclays.eagle_bank_api.security.JwtProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -33,7 +31,7 @@ class UserControllerTest {
   @Autowired private JdbcTemplate jdbcTemplate;
   @Autowired private UserRepository userRepository;
   @Autowired private PasswordEncoder passwordEncoder;
-  @Autowired private JwtProvider jwtProvider;
+  @Autowired private TestAuthHelper authHelper;
 
   @BeforeEach
   void setUp() {
@@ -41,21 +39,11 @@ class UserControllerTest {
   }
 
   private User createAndSaveUser(String email) {
-    return userRepository.save(
-        User.builder()
-            .name("Test User")
-            .email(email)
-            .password(passwordEncoder.encode("Password123!"))
-            .phoneNumber("07988220214")
-            .address(new Address("line1", "line2", "line3", "town", "county", "postcode"))
-            .build());
+    return authHelper.createAndSaveUser(email);
   }
 
   private HttpHeaders createAuthHeaders(User user) {
-    HttpHeaders headers = new HttpHeaders();
-    String token = jwtProvider.generateToken(user);
-    headers.setBearerAuth(token);
-    return headers;
+    return authHelper.createAuthHeaders(user);
   }
 
   @Nested

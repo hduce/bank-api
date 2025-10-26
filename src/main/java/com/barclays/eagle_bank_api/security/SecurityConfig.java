@@ -38,11 +38,7 @@ public class SecurityConfig {
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(
             auth ->
-                auth.requestMatchers("/v1/auth/**")
-                    .permitAll()
-                    .requestMatchers("/swagger-ui/**")
-                    .permitAll()
-                    .requestMatchers("/v3/api-docs/**")
+                auth.requestMatchers("/v1/auth/**", "/swagger-ui/**", "/v3/api-docs/**")
                     .permitAll()
                     .requestMatchers(HttpMethod.POST, "/v1/users")
                     .permitAll()
