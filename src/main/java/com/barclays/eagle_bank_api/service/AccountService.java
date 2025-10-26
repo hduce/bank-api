@@ -10,6 +10,7 @@ import com.barclays.eagle_bank_api.exception.AccountNotFoundException;
 import com.barclays.eagle_bank_api.exception.AccountNumberGenerationException;
 import com.barclays.eagle_bank_api.model.CreateBankAccountRequest;
 import com.barclays.eagle_bank_api.repository.AccountRepository;
+import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,6 +51,10 @@ public class AccountService {
     }
 
     return account;
+  }
+
+  public List<Account> listAccountsForUser(User user) {
+    return accountRepository.findByUserId(user.getId());
   }
 
   private AccountNumber generateUniqueAccountNumber() {

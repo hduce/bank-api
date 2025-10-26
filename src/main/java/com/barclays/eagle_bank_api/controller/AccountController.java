@@ -48,7 +48,14 @@ public class AccountController implements AccountApi {
 
   @Override
   public ResponseEntity<ListBankAccountsResponse> listAccounts() {
-    throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Not implemented");
+    var user = getAuthenticatedUser();
+    var accounts = accountService.listAccountsForUser(user);
+    var accountResponses = accounts.stream().map(accountMapper::toDto).toList();
+
+    var response = new ListBankAccountsResponse();
+    response.setAccounts(accountResponses);
+
+    return ResponseEntity.ok(response);
   }
 
   @Override

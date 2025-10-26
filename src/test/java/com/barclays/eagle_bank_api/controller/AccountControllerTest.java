@@ -277,4 +277,91 @@ class AccountControllerTest {
       assertThat(response.getBody().getName()).isEqualTo("Current Account");
     }
   }
+
+  @Nested
+  class ListAccounts {
+
+    @Test
+    void shouldListAllAccountsForUser() {
+      // Given
+      var user = createAndSaveUser();
+      var savingsAccount = createAccount(user, "Savings Account");
+      var currentAccount = createAccount(user, "Current Account");
+
+      // When
+      var response =
+          restTemplate.exchange(
+              "/v1/accounts",
+              HttpMethod.GET,
+              new HttpEntity<>(createAuthHeaders(user)),
+              com.barclays.eagle_bank_api.model.ListBankAccountsResponse.class);
+
+      // Then
+      assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+      assertThat(response.getBody()).isNotNull();
+      assertThat(response.getBody().getAccounts()).hasSize(2);
+      assertThat(response.getBody().getAccounts())
+          .extracting("accountNumber")
+          .containsExactlyInAnyOrder(
+              savingsAccount.getAccountNumber(), currentAccount.getAccountNumber());
+      assertThat(response.getBody().getAccounts())
+          .extracting("name")
+          .containsExactlyInAnyOrder("Savings Account", "Current Account");
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenUserHasNoAccounts() {
+      // Given
+      var user = createAndSaveUser();
+
+      // When
+      var response =
+          restTemplate.exchange(
+              "/v1/accounts",
+              HttpMethod.GET,
+              new HttpEntity<>(createAuthHeaders(user)),
+              com.barclays.eagle_bank_api.model.ListBankAccountsResponse.class);
+
+      // Then
+      assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+      assertThat(response.getBody()).isNotNull();
+      assertThat(response.getBody().getAccounts()).isEmpty();
+    }
+
+    @Test
+    void shouldOnlyReturnAccountsForAuthenticatedUser() {
+      // Given
+      var user1 = createAndSaveUser();
+      var user2 = testAuthHelper.createAndSaveUser("user2@example.com");
+      var user1Account = createAccount(user1, "User 1 Account");
+      createAccount(user2, "User 2 Account");
+
+      // When
+      var response =
+          restTemplate.exchange(
+              "/v1/accounts",
+              HttpMethod.GET,
+              new HttpEntity<>(createAuthHeaders(user1)),
+              com.barclays.eagle_bank_api.model.ListBankAccountsResponse.class);
+
+      // Then
+      assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+      assertThat(response.getBody()).isNotNull();
+      assertThat(response.getBody().getAccounts()).hasSize(1);
+      assertThat(response.getBody().getAccounts().getFirst().getAccountNumber())
+          .isEqualTo(user1Account.getAccountNumber());
+      assertThat(response.getBody().getAccounts().getFirst().getName()).isEqualTo("User 1 Account");
+    }
+
+    @Test
+    void shouldFailToListAccountsWithoutAuthentication() {
+      // When
+      var response =
+          restTemplate.exchange(
+              "/v1/accounts", HttpMethod.GET, new HttpEntity<>(null), String.class);
+
+      // Then
+      assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+    }
+  }
 }
