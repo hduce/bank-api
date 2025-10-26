@@ -112,6 +112,14 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
   }
 
+  @ExceptionHandler(CannotDeleteUserWithAccountsException.class)
+  public ResponseEntity<ErrorResponse> handleCannotDeleteUserWithAccounts(
+      CannotDeleteUserWithAccountsException ex) {
+    var error = new ErrorResponse();
+    error.setMessage(ex.getMessage());
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+  }
+
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ErrorResponse> handleGenericException() {
     var error = new ErrorResponse();

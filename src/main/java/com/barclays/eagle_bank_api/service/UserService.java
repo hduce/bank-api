@@ -1,10 +1,12 @@
 package com.barclays.eagle_bank_api.service;
 
 import com.barclays.eagle_bank_api.entity.User;
+import com.barclays.eagle_bank_api.exception.CannotDeleteUserWithAccountsException;
 import com.barclays.eagle_bank_api.exception.UserEmailAlreadyExistsException;
 import com.barclays.eagle_bank_api.exception.UserNotFoundException;
 import com.barclays.eagle_bank_api.mapper.AddressMapper;
 import com.barclays.eagle_bank_api.model.UpdateUserRequest;
+import com.barclays.eagle_bank_api.repository.AccountRepository;
 import com.barclays.eagle_bank_api.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,9 +16,14 @@ public class UserService {
 
   private final UserRepository userRepository;
   private final AddressMapper addressMapper;
+  private final AccountRepository accountRepository;
 
-  public UserService(UserRepository userRepository, AddressMapper addressMapper) {
+  public UserService(
+      UserRepository userRepository,
+      AccountRepository accountRepository,
+      AddressMapper addressMapper) {
     this.userRepository = userRepository;
+    this.accountRepository = accountRepository;
     this.addressMapper = addressMapper;
   }
 
@@ -48,6 +55,17 @@ public class UserService {
     }
 
     return userRepository.save(user);
+  }
+
+  @Transactional
+  public void deleteUser(String userId) {
+    var user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
+
+    if (accountRepository.existsByUserId(userId)) {
+      throw new CannotDeleteUserWithAccountsException(userId);
+    }
+
+    userRepository.delete(user);
   }
 
   private static boolean emailIsUpdated(UpdateUserRequest updateRequest, User user) {

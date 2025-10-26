@@ -12,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 public class UserController implements UserApi {
@@ -37,7 +36,8 @@ public class UserController implements UserApi {
   @Override
   @PreAuthorize("#userId == authentication.principal.id")
   public ResponseEntity<Void> deleteUserByID(String userId) {
-    throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Not implemented");
+    userService.deleteUser(userId);
+    return ResponseEntity.noContent().build();
   }
 
   @Override

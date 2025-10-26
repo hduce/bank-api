@@ -386,4 +386,83 @@ class UserControllerTest {
       assertThat(unchangedUser.getEmail()).isEqualTo("otheruser@gmail.com");
     }
   }
+
+  @Nested
+  class DeleteUser {
+
+    @Test
+    void shouldDeleteUserSuccessfully() {
+      // Given
+      final var user = createAndSaveUser("user@example.com");
+
+      // When
+      var response =
+          restTemplate.exchange(
+              "/v1/users/" + user.getId(),
+              HttpMethod.DELETE,
+              new HttpEntity<>(createAuthHeaders(user)),
+              Void.class);
+
+      // Then
+      assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+
+      var deletedUser = userRepository.findById(user.getId());
+      assertThat(deletedUser).isEmpty();
+    }
+
+    @Test
+    void shouldFailToDeleteUserWhenTheyHaveBankAccounts() {
+      // Given
+      final var user = createAndSaveUser("user@example.com");
+
+      // Create a bank account for the user
+      var createRequest =
+          new com.barclays.eagle_bank_api.model.CreateBankAccountRequest()
+              .name("My Account")
+              .accountType(
+                  com.barclays.eagle_bank_api.model.CreateBankAccountRequest.AccountTypeEnum
+                      .PERSONAL);
+      restTemplate.postForEntity(
+          "/v1/accounts",
+          new HttpEntity<>(createRequest, createAuthHeaders(user)),
+          com.barclays.eagle_bank_api.model.BankAccountResponse.class);
+
+      // When
+      var response =
+          restTemplate.exchange(
+              "/v1/users/" + user.getId(),
+              HttpMethod.DELETE,
+              new HttpEntity<>(createAuthHeaders(user)),
+              String.class);
+
+      // Then
+      assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+
+      // Verify user was NOT deleted
+      var unchangedUser = userRepository.findById(user.getId());
+      assertThat(unchangedUser).isPresent();
+    }
+
+    @Test
+    void shouldFailToDeleteAnotherUser() {
+      // Given
+      final var user1 = createAndSaveUser("user1@example.com");
+      final var user2 = createAndSaveUser("user2@example.com");
+
+      // When
+      var response =
+          restTemplate.exchange(
+              "/v1/users/" + user2.getId(),
+              HttpMethod.DELETE,
+              new HttpEntity<>(createAuthHeaders(user1)),
+              String.class);
+
+      // Then
+      assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+
+      // Verify user2 was NOT deleted
+      var unchangedUser = userRepository.findById(user2.getId());
+      assertThat(unchangedUser).isPresent();
+    }
+  }
 }
