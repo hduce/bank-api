@@ -74,6 +74,12 @@ public class AccountService {
     return accountRepository.save(account);
   }
 
+  @Transactional
+  public void deleteAccount(AccountNumber accountNumber, User user) {
+    var account = getAccountByAccountNumber(accountNumber, user);
+    accountRepository.delete(account);
+  }
+
   private AccountType mapCreateAccountType(CreateBankAccountRequest.AccountTypeEnum accountType) {
     return switch (accountType) {
       case PERSONAL -> AccountType.PERSONAL;

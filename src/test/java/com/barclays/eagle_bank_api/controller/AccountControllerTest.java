@@ -472,4 +472,71 @@ class AccountControllerTest {
           .isEqualTo(BankAccountResponse.AccountTypeEnum.PERSONAL);
     }
   }
+
+  @Nested
+  class DeleteAccount {
+
+    @Test
+    void shouldDeleteAccountSuccessfully() {
+      // Given
+      var user = createAndSaveUser();
+      var account = createAccount(user, "Account To Delete");
+
+      // When
+      var response =
+          restTemplate.exchange(
+              "/v1/accounts/" + account.getAccountNumber(),
+              HttpMethod.DELETE,
+              new HttpEntity<>(createAuthHeaders(user)),
+              Void.class);
+
+      // Then
+      assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+
+      // Verify account was deleted from database
+      var accounts = accountRepository.findByUserId(user.getId());
+      assertThat(accounts).isEmpty();
+    }
+
+    @Test
+    void shouldReturnForbiddenWhenDeletingAnotherUsersAccount() {
+      // Given
+      var user1 = createAndSaveUser();
+      var user2 = testAuthHelper.createAndSaveUser("user2@example.com");
+      var user1Account = createAccount(user1, "User 1 Account");
+
+      // When
+      var response =
+          restTemplate.exchange(
+              "/v1/accounts/" + user1Account.getAccountNumber(),
+              HttpMethod.DELETE,
+              new HttpEntity<>(createAuthHeaders(user2)),
+              String.class);
+
+      // Then
+      assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+
+      // Verify account was NOT deleted
+      var accounts = accountRepository.findByUserId(user1.getId());
+      assertThat(accounts).hasSize(1);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenDeletingNonExistentAccount() {
+      // Given
+      var user = createAndSaveUser();
+      var nonExistentAccountNumber = "01999999";
+
+      // When
+      var response =
+          restTemplate.exchange(
+              "/v1/accounts/" + nonExistentAccountNumber,
+              HttpMethod.DELETE,
+              new HttpEntity<>(createAuthHeaders(user)),
+              String.class);
+
+      // Then
+      assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+  }
 }

@@ -13,7 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 public class AccountController implements AccountApi {
@@ -36,7 +35,9 @@ public class AccountController implements AccountApi {
 
   @Override
   public ResponseEntity<Void> deleteAccountByAccountNumber(String accountNumber) {
-    throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Not implemented");
+    var user = getAuthenticatedUser();
+    accountService.deleteAccount(new AccountNumber(accountNumber), user);
+    return ResponseEntity.noContent().build();
   }
 
   @Override
