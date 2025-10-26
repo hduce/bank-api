@@ -18,6 +18,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -41,6 +42,19 @@ class AccountControllerTest {
 
   private HttpHeaders createAuthHeaders(User user) {
     return testAuthHelper.createAuthHeaders(user);
+  }
+
+  private BankAccountResponse createAccount(User user, String accountName) {
+    var createRequest =
+        new CreateBankAccountRequest()
+            .name(accountName)
+            .accountType(CreateBankAccountRequest.AccountTypeEnum.PERSONAL);
+    var response =
+        restTemplate.postForEntity(
+            "/v1/accounts",
+            new HttpEntity<>(createRequest, createAuthHeaders(user)),
+            BankAccountResponse.class);
+    return response.getBody();
   }
 
   @Nested
@@ -166,6 +180,101 @@ class AccountControllerTest {
       assertThat(accounts)
           .extracting("name")
           .containsExactlyInAnyOrder("Savings Account", "Current Account");
+    }
+  }
+
+  @Nested
+  class FetchAccountByAccountNumber {
+
+    @Test
+    void shouldFetchAccountSuccessfully() {
+      // Given
+      var user = createAndSaveUser();
+      var createdAccount = createAccount(user, "My Savings Account");
+
+      // When
+      var response =
+          restTemplate.exchange(
+              "/v1/accounts/" + createdAccount.getAccountNumber(),
+              HttpMethod.GET,
+              new HttpEntity<>(createAuthHeaders(user)),
+              BankAccountResponse.class);
+
+      // Then
+      assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+      assertThat(response.getBody()).isNotNull();
+
+      var accountResponse = response.getBody();
+      assertThat(accountResponse.getAccountNumber()).isEqualTo(createdAccount.getAccountNumber());
+      assertThat(accountResponse.getName()).isEqualTo("My Savings Account");
+      assertThat(accountResponse.getSortCode())
+          .isEqualTo(BankAccountResponse.SortCodeEnum._10_10_10);
+      assertThat(accountResponse.getAccountType())
+          .isEqualTo(BankAccountResponse.AccountTypeEnum.PERSONAL);
+      assertThat(accountResponse.getBalance()).isEqualTo(0.0);
+      assertThat(accountResponse.getCurrency()).isEqualTo(BankAccountResponse.CurrencyEnum.GBP);
+      assertThat(accountResponse.getCreatedTimestamp()).isNotNull();
+      assertThat(accountResponse.getUpdatedTimestamp()).isNotNull();
+    }
+
+    @Test
+    void shouldReturnForbiddenWhenFetchingAnotherUsersAccount() {
+      // Given
+      var user1 = createAndSaveUser();
+      var user2 = testAuthHelper.createAndSaveUser("user2@example.com");
+      var user1Account = createAccount(user1, "User 1 Account");
+
+      // When
+      var response =
+          restTemplate.exchange(
+              "/v1/accounts/" + user1Account.getAccountNumber(),
+              org.springframework.http.HttpMethod.GET,
+              new HttpEntity<>(createAuthHeaders(user2)),
+              String.class);
+
+      // Then
+      assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenAccountDoesNotExist() {
+      // Given
+      var user = createAndSaveUser();
+      var nonExistentAccountNumber = "01999999";
+
+      // When
+      var response =
+          restTemplate.exchange(
+              "/v1/accounts/" + nonExistentAccountNumber,
+              org.springframework.http.HttpMethod.GET,
+              new HttpEntity<>(createAuthHeaders(user)),
+              String.class);
+
+      // Then
+      assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void shouldFetchCorrectAccountWhenUserHasMultipleAccounts() {
+      // Given
+      var user = createAndSaveUser();
+      createAccount(user, "Savings Account");
+      var currentAccount = createAccount(user, "Current Account");
+
+      // When
+      var response =
+          restTemplate.exchange(
+              "/v1/accounts/" + currentAccount.getAccountNumber(),
+              HttpMethod.GET,
+              new HttpEntity<>(createAuthHeaders(user)),
+              BankAccountResponse.class);
+
+      // Then
+      assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+      assertThat(response.getBody()).isNotNull();
+      assertThat(response.getBody().getAccountNumber())
+          .isEqualTo(currentAccount.getAccountNumber());
+      assertThat(response.getBody().getName()).isEqualTo("Current Account");
     }
   }
 }

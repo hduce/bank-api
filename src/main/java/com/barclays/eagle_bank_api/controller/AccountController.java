@@ -1,6 +1,7 @@
 package com.barclays.eagle_bank_api.controller;
 
 import com.barclays.eagle_bank_api.api.AccountApi;
+import com.barclays.eagle_bank_api.entity.AccountNumber;
 import com.barclays.eagle_bank_api.entity.User;
 import com.barclays.eagle_bank_api.mapper.AccountMapper;
 import com.barclays.eagle_bank_api.model.BankAccountResponse;
@@ -40,7 +41,9 @@ public class AccountController implements AccountApi {
 
   @Override
   public ResponseEntity<BankAccountResponse> fetchAccountByAccountNumber(String accountNumber) {
-    throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Not implemented");
+    var user = getAuthenticatedUser();
+    var account = accountService.getAccountByAccountNumber(new AccountNumber(accountNumber), user);
+    return ResponseEntity.ok(accountMapper.toDto(account));
   }
 
   @Override

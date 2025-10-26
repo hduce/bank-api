@@ -35,6 +35,7 @@ public class UserController implements UserApi {
   }
 
   @Override
+  @PreAuthorize("#userId == authentication.principal.id")
   public ResponseEntity<Void> deleteUserByID(String userId) {
     throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Not implemented");
   }

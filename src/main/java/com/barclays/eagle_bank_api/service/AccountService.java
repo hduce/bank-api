@@ -5,6 +5,8 @@ import com.barclays.eagle_bank_api.entity.AccountNumber;
 import com.barclays.eagle_bank_api.entity.AccountType;
 import com.barclays.eagle_bank_api.entity.Currency;
 import com.barclays.eagle_bank_api.entity.User;
+import com.barclays.eagle_bank_api.exception.AccountAccessForbiddenException;
+import com.barclays.eagle_bank_api.exception.AccountNotFoundException;
 import com.barclays.eagle_bank_api.exception.AccountNumberGenerationException;
 import com.barclays.eagle_bank_api.model.CreateBankAccountRequest;
 import com.barclays.eagle_bank_api.repository.AccountRepository;
@@ -35,6 +37,19 @@ public class AccountService {
             .build();
 
     return accountRepository.save(account);
+  }
+
+  public Account getAccountByAccountNumber(AccountNumber accountNumber, User user) {
+    var account =
+        accountRepository
+            .findByAccountNumber(accountNumber)
+            .orElseThrow(() -> new AccountNotFoundException(accountNumber, user.getId()));
+
+    if (!account.getUser().getId().equals(user.getId())) {
+      throw new AccountAccessForbiddenException(accountNumber, user.getId());
+    }
+
+    return account;
   }
 
   private AccountNumber generateUniqueAccountNumber() {
