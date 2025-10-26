@@ -7,6 +7,7 @@ import com.barclays.eagle_bank_api.entity.Address;
 import com.barclays.eagle_bank_api.entity.User;
 import com.barclays.eagle_bank_api.model.CreateUserRequest;
 import com.barclays.eagle_bank_api.model.CreateUserRequestAddress;
+import com.barclays.eagle_bank_api.model.UpdateUserRequest;
 import com.barclays.eagle_bank_api.model.UserResponse;
 import com.barclays.eagle_bank_api.repository.UserRepository;
 import com.barclays.eagle_bank_api.security.JwtProvider;
@@ -37,6 +38,24 @@ class UserControllerTest {
   @BeforeEach
   void setUp() {
     jdbcTemplate.execute("TRUNCATE TABLE users CASCADE");
+  }
+
+  private User createAndSaveUser(String email) {
+    return userRepository.save(
+        User.builder()
+            .name("Test User")
+            .email(email)
+            .password(passwordEncoder.encode("Password123!"))
+            .phoneNumber("07988220214")
+            .address(new Address("line1", "line2", "line3", "town", "county", "postcode"))
+            .build());
+  }
+
+  private HttpHeaders createAuthHeaders(User user) {
+    HttpHeaders headers = new HttpHeaders();
+    String token = jwtProvider.generateToken(user);
+    headers.setBearerAuth(token);
+    return headers;
   }
 
   @Nested
@@ -209,22 +228,152 @@ class UserControllerTest {
       assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
-    private HttpHeaders createAuthHeaders(User user) {
-      HttpHeaders headers = new HttpHeaders();
-      String token = jwtProvider.generateToken(user);
-      headers.setBearerAuth(token);
-      return headers;
+    @Test
+    void shouldForbidAccessWithoutAuthentication() {
+      // Given
+      final var user = createAndSaveUser("user@gmail.com");
+
+      // When
+      var response =
+          restTemplate.exchange(
+              "/v1/users/" + user.getId(), HttpMethod.GET, HttpEntity.EMPTY, String.class);
+
+      // Then
+      assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+    }
+  }
+
+  @Nested
+  class UpdateUser {
+
+    @Test
+    void shouldUpdateOwnUserDetailsSuccessfully() {
+      // Given
+      final var user = createAndSaveUser("original@example.com");
+      final var updateRequest =
+          new UpdateUserRequest()
+              .name("Updated Name")
+              .email("updated@example.com")
+              .phoneNumber("+449876543210")
+              .address(
+                  new CreateUserRequestAddress()
+                      .line1("New Line 1")
+                      .line2("New Line 2")
+                      .line3("New Line 3")
+                      .town("New Town")
+                      .county("New County")
+                      .postcode("NW1 1AA"));
+
+      // When
+      final var response =
+          restTemplate.exchange(
+              "/v1/users/" + user.getId(),
+              HttpMethod.PATCH,
+              new HttpEntity<>(updateRequest, createAuthHeaders(user)),
+              UserResponse.class);
+
+      // Then
+      assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+      assertThat(response.getBody()).isNotNull();
+
+      final var userResponse = response.getBody();
+      assertThat(userResponse.getId()).isEqualTo(user.getId());
+      assertThat(userResponse.getName()).isEqualTo("Updated Name");
+      assertThat(userResponse.getEmail()).isEqualTo("updated@example.com");
+      assertThat(userResponse.getPhoneNumber()).isEqualTo("+449876543210");
+
+      final var addressResponse = userResponse.getAddress();
+      assertThat(addressResponse.getLine1()).isEqualTo("New Line 1");
+      assertThat(addressResponse.getLine2()).isEqualTo("New Line 2");
+      assertThat(addressResponse.getLine3()).isEqualTo("New Line 3");
+      assertThat(addressResponse.getTown()).isEqualTo("New Town");
+      assertThat(addressResponse.getCounty()).isEqualTo("New County");
+      assertThat(addressResponse.getPostcode()).isEqualTo("NW1 1AA");
+
+      // Verify database was updated
+      final var updatedUser = userRepository.findById(user.getId()).orElseThrow();
+      assertThat(updatedUser.getName()).isEqualTo("Updated Name");
+      assertThat(updatedUser.getEmail()).isEqualTo("updated@example.com");
+      assertThat(updatedUser.getPhoneNumber()).isEqualTo("+449876543210");
+      var updatedAddress = updatedUser.getAddress();
+      assertThat(updatedAddress.line1()).isEqualTo("New Line 1");
+      assertThat(updatedAddress.line2()).isEqualTo("New Line 2");
+      assertThat(updatedAddress.line3()).isEqualTo("New Line 3");
+      assertThat(updatedAddress.town()).isEqualTo("New Town");
+      assertThat(updatedAddress.county()).isEqualTo("New County");
+      assertThat(updatedAddress.postcode()).isEqualTo("NW1 1AA");
     }
 
-    private User createAndSaveUser(String email) {
-      return userRepository.save(
-          User.builder()
-              .name("Test User")
-              .email(email)
-              .password(passwordEncoder.encode("Password123!"))
-              .phoneNumber("07988220214")
-              .address(new Address("line1", "line2", "line3", "town", "county", "postcode"))
-              .build());
+    @Test
+    void shouldPartiallyUpdateOwnUserDetails() {
+      // Given
+      final var user = createAndSaveUser("user@gmail.com");
+      final var updateRequest = new UpdateUserRequest().phoneNumber("+441112223334");
+
+      // When
+      final var response =
+          restTemplate.exchange(
+              "/v1/users/" + user.getId(),
+              HttpMethod.PATCH,
+              new HttpEntity<>(updateRequest, createAuthHeaders(user)),
+              UserResponse.class);
+
+      // Then
+      assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+      assertThat(response.getBody()).isNotNull();
+      final var userResponse = response.getBody();
+      assertThat(userResponse.getPhoneNumber()).isEqualTo("+441112223334");
+      assertThat(userResponse.getName()).isEqualTo("Test User"); // Unchanged
+
+      // Verify database was updated
+      final var updatedUser = userRepository.findById(user.getId()).orElseThrow();
+      assertThat(updatedUser.getPhoneNumber()).isEqualTo("+441112223334");
+      assertThat(updatedUser.getName()).isEqualTo("Test User"); // Unchanged
+    }
+
+    @Test
+    void shouldFailToUpdateAnotherUsersDetails() {
+      // Given
+      final var user1 = createAndSaveUser("user1@example.com");
+      final var user2 = createAndSaveUser("user2@example.com");
+      var updateRequest = new UpdateUserRequest().name("Hacked Name");
+
+      // When
+      var response =
+          restTemplate.exchange(
+              "/v1/users/" + user2.getId(),
+              HttpMethod.PATCH,
+              new HttpEntity<>(updateRequest, createAuthHeaders(user1)),
+              String.class);
+
+      // Then
+      assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+
+      // Verify user2 was NOT updated
+      var unchangedUser = userRepository.findById(user2.getId()).orElseThrow();
+      assertThat(unchangedUser.getName()).isEqualTo("Test User");
+    }
+
+    @Test
+    void shouldFailToUpdateUserWithoutAuthentication() {
+      // Given
+      final var user = createAndSaveUser("test@example.com");
+      var updateRequest = new UpdateUserRequest().name("New Name");
+
+      // When
+      var response =
+          restTemplate.exchange(
+              "/v1/users/" + user.getId(),
+              HttpMethod.PATCH,
+              new HttpEntity<>(updateRequest, HttpHeaders.EMPTY),
+              String.class);
+
+      // Then
+      assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+
+      // Verify user was NOT updated
+      var unchangedUser = userRepository.findById(user.getId()).orElseThrow();
+      assertThat(unchangedUser.getName()).isEqualTo("Test User");
     }
   }
 }

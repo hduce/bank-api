@@ -1,14 +1,13 @@
 package com.barclays.eagle_bank_api.controller;
 
 import com.barclays.eagle_bank_api.api.UserApi;
-import com.barclays.eagle_bank_api.entity.Address;
 import com.barclays.eagle_bank_api.entity.User;
+import com.barclays.eagle_bank_api.mapper.AddressMapper;
 import com.barclays.eagle_bank_api.model.CreateUserRequest;
-import com.barclays.eagle_bank_api.model.CreateUserRequestAddress;
 import com.barclays.eagle_bank_api.model.UpdateUserRequest;
 import com.barclays.eagle_bank_api.model.UserResponse;
-import com.barclays.eagle_bank_api.repository.UserRepository;
 import com.barclays.eagle_bank_api.service.AuthService;
+import com.barclays.eagle_bank_api.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,11 +18,14 @@ import org.springframework.web.server.ResponseStatusException;
 public class UserController implements UserApi {
 
   private final AuthService authService;
-  private final UserRepository userRepository;
+  private final UserService userService;
+  private final AddressMapper addressMapper;
 
-  public UserController(AuthService authService, UserRepository userRepository) {
+  public UserController(
+      AuthService authService, UserService userService, AddressMapper addressMapper) {
     this.authService = authService;
-    this.userRepository = userRepository;
+    this.userService = userService;
+    this.addressMapper = addressMapper;
   }
 
   @Override
@@ -40,38 +42,27 @@ public class UserController implements UserApi {
   @Override
   @PreAuthorize("#userId == authentication.principal.id")
   public ResponseEntity<UserResponse> fetchUserByID(String userId) {
-    var user =
-        userRepository
-            .findById(userId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+    var user = userService.getUserById(userId);
 
     return ResponseEntity.ok(toDto(user));
   }
 
   @Override
+  @PreAuthorize("#userId == authentication.principal.id")
   public ResponseEntity<UserResponse> updateUserByID(
       String userId, UpdateUserRequest updateUserRequest) {
-    throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Not implemented");
+    var updatedUser = userService.updateUser(userId, updateUserRequest);
+    return ResponseEntity.ok(toDto(updatedUser));
   }
 
   private UserResponse toDto(User user) {
     return new UserResponse()
         .id(user.getId())
         .name(user.getName())
-        .address(toAddressDto(user.getAddress()))
+        .address(addressMapper.toDto(user.getAddress()))
         .phoneNumber(user.getPhoneNumber())
         .email(user.getEmail())
         .createdTimestamp(user.getCreatedTimestamp())
         .updatedTimestamp(user.getUpdatedTimestamp());
-  }
-
-  private CreateUserRequestAddress toAddressDto(Address address) {
-    return new CreateUserRequestAddress()
-        .line1(address.line1())
-        .line2(address.line2())
-        .line3(address.line3())
-        .town(address.town())
-        .county(address.county())
-        .postcode(address.postcode());
   }
 }
