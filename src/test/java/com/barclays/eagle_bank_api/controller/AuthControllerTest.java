@@ -94,7 +94,7 @@ class AuthControllerTest {
       var loginResponse = restTemplate.postForEntity("/v1/auth/login", loginRequest, String.class);
 
       // Then
-      assertThat(loginResponse.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+      assertThat(loginResponse.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
     @Test
@@ -107,7 +107,7 @@ class AuthControllerTest {
       var loginResponse = restTemplate.postForEntity("/v1/auth/login", loginRequest, String.class);
 
       // Then
-      assertThat(loginResponse.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+      assertThat(loginResponse.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
   }
 
