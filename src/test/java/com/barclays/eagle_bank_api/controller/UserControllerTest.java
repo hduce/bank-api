@@ -3,11 +3,13 @@ package com.barclays.eagle_bank_api.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.barclays.eagle_bank_api.TestcontainersConfiguration;
+import com.barclays.eagle_bank_api.entity.Address;
 import com.barclays.eagle_bank_api.entity.User;
 import com.barclays.eagle_bank_api.model.CreateUserRequest;
 import com.barclays.eagle_bank_api.model.CreateUserRequestAddress;
 import com.barclays.eagle_bank_api.model.UserResponse;
 import com.barclays.eagle_bank_api.repository.UserRepository;
+import com.barclays.eagle_bank_api.security.JwtProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -15,6 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,6 +32,7 @@ class UserControllerTest {
   @Autowired private JdbcTemplate jdbcTemplate;
   @Autowired private UserRepository userRepository;
   @Autowired private PasswordEncoder passwordEncoder;
+  @Autowired private JwtProvider jwtProvider;
 
   @BeforeEach
   void setUp() {
@@ -131,23 +137,94 @@ class UserControllerTest {
               "SELECT COUNT(*) FROM users WHERE email = ?", Integer.class, "john.doe@example.com");
       assertThat(userCount).isEqualTo(1);
     }
+
+    private CreateUserRequest buildCreateUserRequest() {
+      return new CreateUserRequest()
+          .name("John Doe")
+          .email("john.doe@example.com")
+          .password("SecurePassword123!")
+          .phoneNumber("+441234567890")
+          .address(buildAddress());
+    }
+
+    private CreateUserRequestAddress buildAddress() {
+      return new CreateUserRequestAddress()
+          .line1("123 Main Street")
+          .line2("Apt 4B")
+          .town("London")
+          .county("Greater London")
+          .postcode("SW1A 1AA");
+    }
   }
 
-  private CreateUserRequest buildCreateUserRequest() {
-    return new CreateUserRequest()
-        .name("John Doe")
-        .email("john.doe@example.com")
-        .password("SecurePassword123!")
-        .phoneNumber("+441234567890")
-        .address(buildAddress());
-  }
+  @Nested
+  class FetchUser {
+    @Test
+    void shouldFetchUserSuccessfully() {
+      // Given
+      final var user = createAndSaveUser("foo@gmail.com");
 
-  private CreateUserRequestAddress buildAddress() {
-    return new CreateUserRequestAddress()
-        .line1("123 Main Street")
-        .line2("Apt 4B")
-        .town("London")
-        .county("Greater London")
-        .postcode("SW1A 1AA");
+      // When
+      var response =
+          restTemplate.exchange(
+              "/v1/users/" + user.getId(),
+              HttpMethod.GET,
+              new HttpEntity<>(createAuthHeaders(user)),
+              UserResponse.class);
+
+      // Then
+      assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+      var userResponse = response.getBody();
+      assertThat(userResponse).isNotNull();
+      assertThat(userResponse.getId()).isEqualTo(user.getId());
+      assertThat(userResponse.getName()).isEqualTo("Test User");
+      assertThat(userResponse.getEmail()).isEqualTo("foo@gmail.com");
+      assertThat(userResponse.getPhoneNumber()).isEqualTo("07988220214");
+
+      var addressResponse = userResponse.getAddress();
+      assertThat(addressResponse).isNotNull();
+      assertThat(addressResponse.getLine1()).isEqualTo("line1");
+      assertThat(addressResponse.getLine2()).isEqualTo("line2");
+      assertThat(addressResponse.getLine3()).isEqualTo("line3");
+      assertThat(addressResponse.getTown()).isEqualTo("town");
+      assertThat(addressResponse.getCounty()).isEqualTo("county");
+      assertThat(addressResponse.getPostcode()).isEqualTo("postcode");
+    }
+
+    @Test
+    void shouldForbidAccessToOtherUsersData() {
+      // Given
+      final var user1 = createAndSaveUser("user1@gmail.com");
+      final var user2 = createAndSaveUser("user2@gmail.com");
+
+      // When
+      var response =
+          restTemplate.exchange(
+              "/v1/users/" + user2.getId(),
+              HttpMethod.GET,
+              new HttpEntity<>(createAuthHeaders(user1)),
+              String.class);
+
+      // Then
+      assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+    }
+
+    private HttpHeaders createAuthHeaders(User user) {
+      HttpHeaders headers = new HttpHeaders();
+      String token = jwtProvider.generateToken(user);
+      headers.setBearerAuth(token);
+      return headers;
+    }
+
+    private User createAndSaveUser(String email) {
+      return userRepository.save(
+          User.builder()
+              .name("Test User")
+              .email(email)
+              .password(passwordEncoder.encode("Password123!"))
+              .phoneNumber("07988220214")
+              .address(new Address("line1", "line2", "line3", "town", "county", "postcode"))
+              .build());
+    }
   }
 }

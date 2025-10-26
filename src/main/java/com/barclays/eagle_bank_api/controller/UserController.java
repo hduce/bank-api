@@ -7,9 +7,12 @@ import com.barclays.eagle_bank_api.model.CreateUserRequest;
 import com.barclays.eagle_bank_api.model.CreateUserRequestAddress;
 import com.barclays.eagle_bank_api.model.UpdateUserRequest;
 import com.barclays.eagle_bank_api.model.UserResponse;
+import com.barclays.eagle_bank_api.repository.UserRepository;
 import com.barclays.eagle_bank_api.service.AuthService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -17,9 +20,11 @@ import org.springframework.web.server.ResponseStatusException;
 public class UserController implements UserApi {
 
   private final AuthService authService;
+  private final UserRepository userRepository;
 
-  public UserController(AuthService authService) {
+  public UserController(AuthService authService, UserRepository userRepository) {
     this.authService = authService;
+    this.userRepository = userRepository;
   }
 
   @Override
@@ -34,8 +39,14 @@ public class UserController implements UserApi {
   }
 
   @Override
+  @PreAuthorize("#userId == authentication.principal.id")
   public ResponseEntity<UserResponse> fetchUserByID(String userId) {
-    throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Not implemented");
+    var user =
+        userRepository
+            .findById(userId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+    return ResponseEntity.ok(toDto(user));
   }
 
   @Override
@@ -63,5 +74,9 @@ public class UserController implements UserApi {
         .town(address.town())
         .county(address.county())
         .postcode(address.postcode());
+  }
+
+  private User getAuthenticatedUser() {
+    return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
   }
 }

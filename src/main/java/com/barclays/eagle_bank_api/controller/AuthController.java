@@ -3,8 +3,8 @@ package com.barclays.eagle_bank_api.controller;
 import com.barclays.eagle_bank_api.api.AuthApi;
 import com.barclays.eagle_bank_api.model.LoginRequest;
 import com.barclays.eagle_bank_api.model.LoginResponse;
+import com.barclays.eagle_bank_api.security.JwtProvider;
 import com.barclays.eagle_bank_api.service.AuthService;
-import com.barclays.eagle_bank_api.service.JwtService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,18 +13,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController implements AuthApi {
 
   private final AuthService authService;
-  private final JwtService jwtService;
+  private final JwtProvider jwtProvider;
 
-  public AuthController(AuthService authService, JwtService jwtService) {
+  public AuthController(AuthService authService, JwtProvider jwtProvider) {
     this.authService = authService;
-    this.jwtService = jwtService;
+    this.jwtProvider = jwtProvider;
   }
 
   @Override
   public ResponseEntity<LoginResponse> login(LoginRequest loginRequest) {
     final var user = authService.login(loginRequest.getEmail(), loginRequest.getPassword());
 
-    final var token = jwtService.generateToken(user);
+    final var token = jwtProvider.generateToken(user);
     return new ResponseEntity<>(new LoginResponse(token), HttpStatus.OK);
   }
 }

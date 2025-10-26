@@ -1,7 +1,7 @@
 package com.barclays.eagle_bank_api.service;
 
+import com.barclays.eagle_bank_api.entity.User;
 import com.barclays.eagle_bank_api.repository.UserRepository;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -15,9 +15,9 @@ class UserDetailsServiceImpl implements UserDetailsService {
   }
 
   @Override
-  public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+  public User loadUserByUsername(String email) throws UsernameNotFoundException {
     return userRepository
-        .findByEmail(username)
-        .orElseThrow(() -> new UsernameNotFoundException(username));
+        .findByEmail(email)
+        .orElseThrow(() -> new UsernameNotFoundException(email));
   }
 }
