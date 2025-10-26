@@ -9,6 +9,7 @@ import com.barclays.eagle_bank_api.exception.AccountAccessForbiddenException;
 import com.barclays.eagle_bank_api.exception.AccountNotFoundException;
 import com.barclays.eagle_bank_api.exception.AccountNumberGenerationException;
 import com.barclays.eagle_bank_api.model.CreateBankAccountRequest;
+import com.barclays.eagle_bank_api.model.UpdateBankAccountRequest;
 import com.barclays.eagle_bank_api.repository.AccountRepository;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -31,7 +32,7 @@ public class AccountService {
         Account.builder()
             .accountNumber(generateUniqueAccountNumber())
             .name(request.getName())
-            .accountType(AccountType.valueOf(request.getAccountType().name()))
+            .accountType(mapCreateAccountType(request.getAccountType()))
             .balance(0.0)
             .currency(Currency.GBP)
             .user(user)
@@ -55,6 +56,34 @@ public class AccountService {
 
   public List<Account> listAccountsForUser(User user) {
     return accountRepository.findByUserId(user.getId());
+  }
+
+  @Transactional
+  public Account updateAccount(
+      AccountNumber accountNumber, UpdateBankAccountRequest request, User user) {
+    var account = getAccountByAccountNumber(accountNumber, user);
+
+    if (request.getName() != null) {
+      account.setName(request.getName());
+    }
+
+    if (request.getAccountType() != null) {
+      account.setAccountType(mapAccountType(request.getAccountType()));
+    }
+
+    return accountRepository.save(account);
+  }
+
+  private AccountType mapCreateAccountType(CreateBankAccountRequest.AccountTypeEnum accountType) {
+    return switch (accountType) {
+      case PERSONAL -> AccountType.PERSONAL;
+    };
+  }
+
+  private AccountType mapAccountType(UpdateBankAccountRequest.AccountTypeEnum accountType) {
+    return switch (accountType) {
+      case PERSONAL -> AccountType.PERSONAL;
+    };
   }
 
   private AccountNumber generateUniqueAccountNumber() {

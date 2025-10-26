@@ -8,6 +8,8 @@ import com.barclays.eagle_bank_api.entity.Currency;
 import com.barclays.eagle_bank_api.entity.User;
 import com.barclays.eagle_bank_api.model.BankAccountResponse;
 import com.barclays.eagle_bank_api.model.CreateBankAccountRequest;
+import com.barclays.eagle_bank_api.model.ListBankAccountsResponse;
+import com.barclays.eagle_bank_api.model.UpdateBankAccountRequest;
 import com.barclays.eagle_bank_api.repository.AccountRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -294,7 +296,7 @@ class AccountControllerTest {
               "/v1/accounts",
               HttpMethod.GET,
               new HttpEntity<>(createAuthHeaders(user)),
-              com.barclays.eagle_bank_api.model.ListBankAccountsResponse.class);
+              ListBankAccountsResponse.class);
 
       // Then
       assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -320,7 +322,7 @@ class AccountControllerTest {
               "/v1/accounts",
               HttpMethod.GET,
               new HttpEntity<>(createAuthHeaders(user)),
-              com.barclays.eagle_bank_api.model.ListBankAccountsResponse.class);
+              ListBankAccountsResponse.class);
 
       // Then
       assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -342,7 +344,7 @@ class AccountControllerTest {
               "/v1/accounts",
               HttpMethod.GET,
               new HttpEntity<>(createAuthHeaders(user1)),
-              com.barclays.eagle_bank_api.model.ListBankAccountsResponse.class);
+              ListBankAccountsResponse.class);
 
       // Then
       assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -362,6 +364,112 @@ class AccountControllerTest {
 
       // Then
       assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+    }
+  }
+
+  @Nested
+  class UpdateAccount {
+
+    @Test
+    void shouldUpdateAccountSuccessfully() {
+      // Given
+      var user = createAndSaveUser();
+      var account = createAccount(user, "Old Account Name");
+      var updateRequest =
+          new UpdateBankAccountRequest()
+              .name("New Account Name")
+              .accountType(UpdateBankAccountRequest.AccountTypeEnum.PERSONAL);
+
+      // When
+      var response =
+          restTemplate.exchange(
+              "/v1/accounts/" + account.getAccountNumber(),
+              HttpMethod.PATCH,
+              new HttpEntity<>(updateRequest, createAuthHeaders(user)),
+              BankAccountResponse.class);
+
+      // Then
+      assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+      assertThat(response.getBody()).isNotNull();
+      assertThat(response.getBody().getAccountNumber()).isEqualTo(account.getAccountNumber());
+      assertThat(response.getBody().getName()).isEqualTo("New Account Name");
+      assertThat(response.getBody().getAccountType())
+          .isEqualTo(BankAccountResponse.AccountTypeEnum.PERSONAL);
+      assertThat(response.getBody().getBalance()).isEqualTo(0.0);
+      assertThat(response.getBody().getCurrency()).isEqualTo(BankAccountResponse.CurrencyEnum.GBP);
+      assertThat(response.getBody().getSortCode())
+          .isEqualTo(BankAccountResponse.SortCodeEnum._10_10_10);
+
+      // Verify database state
+      var updatedAccount =
+          accountRepository.findByAccountNumber(
+              new com.barclays.eagle_bank_api.entity.AccountNumber(account.getAccountNumber()));
+      assertThat(updatedAccount).isPresent();
+      assertThat(updatedAccount.get().getName()).isEqualTo("New Account Name");
+    }
+
+    @Test
+    void shouldReturnForbiddenWhenUpdatingAnotherUsersAccount() {
+      // Given
+      var user1 = createAndSaveUser();
+      var user2 = testAuthHelper.createAndSaveUser("user2@example.com");
+      var user1Account = createAccount(user1, "User 1 Account");
+      var updateRequest = new UpdateBankAccountRequest().name("Hacked Name");
+
+      // When
+      var response =
+          restTemplate.exchange(
+              "/v1/accounts/" + user1Account.getAccountNumber(),
+              HttpMethod.PATCH,
+              new HttpEntity<>(updateRequest, createAuthHeaders(user2)),
+              String.class);
+
+      // Then
+      assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenAccountDoesNotExist() {
+      // Given
+      var user = createAndSaveUser();
+      var nonExistentAccountNumber = "01999999";
+      var updateRequest = new UpdateBankAccountRequest().name("New Name");
+
+      // When
+      var response =
+          restTemplate.exchange(
+              "/v1/accounts/" + nonExistentAccountNumber,
+              HttpMethod.PATCH,
+              new HttpEntity<>(updateRequest, createAuthHeaders(user)),
+              String.class);
+
+      // Then
+      assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void shouldUpdateOnlyProvidedFields() {
+      // Given
+      var user = createAndSaveUser();
+      var account = createAccount(user, "Original Name");
+      var updateRequest =
+          new UpdateBankAccountRequest()
+              .accountType(UpdateBankAccountRequest.AccountTypeEnum.PERSONAL);
+
+      // When
+      var response =
+          restTemplate.exchange(
+              "/v1/accounts/" + account.getAccountNumber(),
+              HttpMethod.PATCH,
+              new HttpEntity<>(updateRequest, createAuthHeaders(user)),
+              BankAccountResponse.class);
+
+      // Then
+      assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+      assertThat(response.getBody()).isNotNull();
+      assertThat(response.getBody().getName()).isEqualTo("Original Name");
+      assertThat(response.getBody().getAccountType())
+          .isEqualTo(BankAccountResponse.AccountTypeEnum.PERSONAL);
     }
   }
 }

@@ -61,7 +61,11 @@ public class AccountController implements AccountApi {
   @Override
   public ResponseEntity<BankAccountResponse> updateAccountByAccountNumber(
       String accountNumber, UpdateBankAccountRequest updateBankAccountRequest) {
-    throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Not implemented");
+    var user = getAuthenticatedUser();
+    var account =
+        accountService.updateAccount(
+            new AccountNumber(accountNumber), updateBankAccountRequest, user);
+    return ResponseEntity.ok(accountMapper.toDto(account));
   }
 
   private User getAuthenticatedUser() {
