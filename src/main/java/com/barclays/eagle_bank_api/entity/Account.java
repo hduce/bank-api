@@ -40,14 +40,13 @@ public class Account {
   @Column(name = "account_type", nullable = false)
   private AccountType accountType;
 
-  @Column(name = "balance", nullable = false)
+  @Embedded
+  @AttributeOverrides({
+    @AttributeOverride(name = "value", column = @Column(name = "balance", nullable = false)),
+    @AttributeOverride(name = "currency", column = @Column(name = "currency", nullable = false))
+  })
   @Builder.Default
-  private Double balance = 0.0;
-
-  @Enumerated(EnumType.STRING)
-  @Column(name = "currency", nullable = false)
-  @Builder.Default
-  private Currency currency = Currency.GBP;
+  private Amount balance = Amount.zero();
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "user_id", nullable = false)

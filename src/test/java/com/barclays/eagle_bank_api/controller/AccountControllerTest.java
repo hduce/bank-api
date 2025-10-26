@@ -102,10 +102,10 @@ class AccountControllerTest {
       assertThat(account.getAccountNumber().value()).isEqualTo(accountResponse.getAccountNumber());
       assertThat(account.getSortCode()).isEqualTo("10-10-10");
       assertThat(account.getName()).isEqualTo("My Savings Account");
-      assertThat(account.getBalance()).isEqualTo(0.0);
+      assertThat(account.getBalance().value()).isEqualTo(0.0);
       assertThat(account.getUser().getId()).isEqualTo(user.getId());
       assertThat(account.getAccountType()).isEqualTo(AccountType.PERSONAL);
-      assertThat(account.getCurrency()).isEqualTo(Currency.GBP);
+      assertThat(account.getBalance().currency()).isEqualTo(Currency.GBP);
     }
 
     @Test

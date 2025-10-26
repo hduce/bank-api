@@ -16,8 +16,8 @@ public class AccountMapper {
         .sortCode(mapSortCode(account.getSortCode()))
         .name(account.getName())
         .accountType(mapAccountType(account.getAccountType()))
-        .balance(account.getBalance())
-        .currency(mapCurrency(account.getCurrency()))
+        .balance(account.getBalance().value())
+        .currency(mapCurrency(account.getBalance().currency()))
         .createdTimestamp(account.getCreatedTimestamp())
         .updatedTimestamp(account.getUpdatedTimestamp());
   }

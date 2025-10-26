@@ -3,7 +3,7 @@ package com.barclays.eagle_bank_api.service;
 import com.barclays.eagle_bank_api.entity.Account;
 import com.barclays.eagle_bank_api.entity.AccountNumber;
 import com.barclays.eagle_bank_api.entity.AccountType;
-import com.barclays.eagle_bank_api.entity.Currency;
+import com.barclays.eagle_bank_api.entity.Amount;
 import com.barclays.eagle_bank_api.entity.User;
 import com.barclays.eagle_bank_api.exception.AccountAccessForbiddenException;
 import com.barclays.eagle_bank_api.exception.AccountNotFoundException;
@@ -33,8 +33,7 @@ public class AccountService {
             .accountNumber(generateUniqueAccountNumber())
             .name(request.getName())
             .accountType(mapCreateAccountType(request.getAccountType()))
-            .balance(0.0)
-            .currency(Currency.GBP)
+            .balance(Amount.zero())
             .user(user)
             .build();
 
