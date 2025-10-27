@@ -163,9 +163,9 @@ All major functionality is covered:
 
 - User registration, login, CRUD operations
 - Account creation, listing, updates, deletion
-- Transaction creation (deposits/withdrawals)
+- Transaction management (deposits/withdrawals)
 - Authentication and authorization
-- Business rules (insufficient funds, account deletion restrictions)
+- Business rules (insufficient funds, account deletion restrictions etc)
 - Error handling and validation
 
 ## Architecture
@@ -206,7 +206,7 @@ Database          → PostgreSQL
 
 **Why API-First?**
 
-- Contract serves as documentation
+- Contract provided in tech task becomes source of truth
 - Type-safe implementation
 - Frontend/backend can work from same contract
 - Validation defined once in OpenAPI spec
@@ -217,6 +217,23 @@ Database          → PostgreSQL
 - Catch integration issues early
 - Database constraints validated
 - Higher confidence in deployments
+- With more time would implement unit tests for more coverage on core logic
+
+**Why Postgres?**
+
+- Robust, production-ready relational database
+- Familiarity and widespread use
+- Strong support in Spring Data JPA
+- Easy to run locally with Docker
+- Supports complex queries and transactions needed for banking app
+- Scales well for future growth
+
+**Why Spring?**
+
+- Mature, widely-used Java framework
+- Excellent support for REST APIs, security, data access
+- Large ecosystem and community
+- Rapid development with Spring Boot conventions
 
 ## Project Structure
 
@@ -279,6 +296,28 @@ every push to main.
 ```
 
 All checks must pass before code can be merged to main.
+
+### Pre-Commit Hooks
+
+The project includes a Git pre-commit hook (`.git/hooks/pre-commit`) that automatically runs before each commit:
+
+**Checks performed:**
+1. **Code Formatting** - Runs `spotlessCheck` to ensure code style is consistent
+2. **Build & Tests** - Runs `./gradlew check` which includes compilation and all tests
+
+**What happens:**
+- If any check fails, the commit is blocked
+- You'll see clear error messages indicating what needs to be fixed
+- Run `./gradlew spotlessApply` to automatically fix formatting issues
+
+**Installing the hook:**
+The hook is already in `.git/hooks/pre-commit` and will run automatically. If you cloned the repo and it's not working, ensure it's executable:
+
+```bash
+chmod +x .git/hooks/pre-commit
+```
+
+This ensures code quality before changes are committed and reduces CI failures.
 
 ## Configuration
 
