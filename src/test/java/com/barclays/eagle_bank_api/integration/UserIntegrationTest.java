@@ -1,4 +1,4 @@
-package com.barclays.eagle_bank_api.controller;
+package com.barclays.eagle_bank_api.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -25,7 +25,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Import(TestcontainersConfiguration.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class UserControllerTest {
+class UserIntegrationTest {
 
   @Autowired private TestRestTemplate restTemplate;
   @Autowired private JdbcTemplate jdbcTemplate;

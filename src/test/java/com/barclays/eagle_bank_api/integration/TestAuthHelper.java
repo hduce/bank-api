@@ -1,4 +1,4 @@
-package com.barclays.eagle_bank_api.controller;
+package com.barclays.eagle_bank_api.integration;
 
 import com.barclays.eagle_bank_api.domain.Address;
 import com.barclays.eagle_bank_api.entity.User;
