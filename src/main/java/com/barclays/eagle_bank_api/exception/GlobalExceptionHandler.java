@@ -142,6 +142,14 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
   }
 
+  @ExceptionHandler(CannotDeleteAccountWithBalanceException.class)
+  public ResponseEntity<ErrorResponse> handleCannotDeleteAccountWithBalance(
+      CannotDeleteAccountWithBalanceException ex) {
+    var error = new ErrorResponse();
+    error.setMessage(ex.getMessage());
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+  }
+
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ErrorResponse> handleGenericException() {
     var error = new ErrorResponse();

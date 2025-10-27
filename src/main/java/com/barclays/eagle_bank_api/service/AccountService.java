@@ -8,6 +8,7 @@ import com.barclays.eagle_bank_api.entity.User;
 import com.barclays.eagle_bank_api.exception.AccountAccessForbiddenException;
 import com.barclays.eagle_bank_api.exception.AccountNotFoundException;
 import com.barclays.eagle_bank_api.exception.AccountNumberGenerationException;
+import com.barclays.eagle_bank_api.exception.CannotDeleteAccountWithBalanceException;
 import com.barclays.eagle_bank_api.model.CreateBankAccountRequest;
 import com.barclays.eagle_bank_api.model.UpdateBankAccountRequest;
 import com.barclays.eagle_bank_api.repository.AccountRepository;
@@ -76,6 +77,12 @@ public class AccountService {
   @Transactional
   public void deleteAccount(AccountNumber accountNumber, User user) {
     var account = getAccountByAccountNumber(accountNumber, user);
+
+    if (account.getBalance().isGreaterThan(Amount.zero())) {
+      throw new CannotDeleteAccountWithBalanceException(
+          account.getAccountNumber(), account.getBalance());
+    }
+
     accountRepository.delete(account);
   }
 

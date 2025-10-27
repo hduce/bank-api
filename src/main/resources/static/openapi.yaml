@@ -278,6 +278,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+        '409':
+          description: A bank account cannot be deleted when it has a balance greater than zero
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         '500':
           description: An unexpected error occurred
           content:

@@ -544,6 +544,44 @@ class AccountControllerTest {
     }
 
     @Test
+    void shouldNotDeleteAccountWhenBalanceIsGreaterThanZero() {
+      // Given
+      var user = createAndSaveUser();
+      var account = createAccount(user, "Account With Balance");
+
+      // Create a deposit to give the account a positive balance
+      var depositRequest =
+          new CreateTransactionRequest()
+              .amount(100.0)
+              .currency(CreateTransactionRequest.CurrencyEnum.GBP)
+              .type(CreateTransactionRequest.TypeEnum.DEPOSIT)
+              .reference("Initial deposit");
+      var depositResponse =
+          restTemplate.postForEntity(
+              "/v1/accounts/" + account.getAccountNumber() + "/transactions",
+              new HttpEntity<>(depositRequest, createAuthHeaders(user)),
+              TransactionResponse.class);
+      assertThat(depositResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+
+      // When
+      var response =
+          restTemplate.exchange(
+              "/v1/accounts/" + account.getAccountNumber(),
+              HttpMethod.DELETE,
+              new HttpEntity<>(createAuthHeaders(user)),
+              String.class);
+
+      // Then - Expect 409 Conflict
+      assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+
+      // Verify account was NOT deleted
+      var accounts = accountRepository.findByUserId(user.getId());
+      assertThat(accounts).hasSize(1);
+      assertThat(accounts.getFirst().getAccountNumber().value())
+          .isEqualTo(account.getAccountNumber());
+    }
+
+    @Test
     void shouldDeleteTransactionsWhenAccountIsDeleted() {
       // Given
       var user = createAndSaveUser();
@@ -575,7 +613,7 @@ class AccountControllerTest {
 
       var withdrawalRequest =
           new CreateTransactionRequest()
-              .amount(30.0)
+              .amount(150.0) // Total deposits are 150, so this brings balance to zero
               .currency(CreateTransactionRequest.CurrencyEnum.GBP)
               .type(CreateTransactionRequest.TypeEnum.WITHDRAWAL)
               .reference("Withdrawal 1");
