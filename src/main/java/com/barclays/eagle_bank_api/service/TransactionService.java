@@ -37,10 +37,7 @@ public class TransactionService {
   }
 
   @Transactional
-  @Retryable(
-      retryFor = OptimisticLockException.class,
-      maxAttempts = 3,
-      backoff = @Backoff(delay = 100))
+  @Retryable(retryFor = OptimisticLockException.class, backoff = @Backoff(delay = 100))
   public Transaction createTransaction(
       AccountNumber accountNumber, CreateTransactionRequest request, User user) {
     var account = accountService.getAccountByAccountNumber(accountNumber, user);
@@ -61,6 +58,7 @@ public class TransactionService {
             .type(transactionType)
             .amount(amount)
             .reference(request.getReference())
+            .userId(user.getId())
             .build();
 
     return transactionRepository.save(transaction);

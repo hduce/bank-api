@@ -41,6 +41,9 @@ public class Transaction {
   @Column(name = "reference")
   private String reference;
 
+  @Column(name = "user_id", nullable = false)
+  private String userId;
+
   @CreationTimestamp
   @Column(name = "created_timestamp", nullable = false, updatable = false)
   private OffsetDateTime createdTimestamp;

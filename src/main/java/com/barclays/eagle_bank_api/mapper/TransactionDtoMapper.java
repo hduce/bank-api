@@ -16,6 +16,7 @@ public class TransactionDtoMapper {
         .currency(mapCurrency(transaction.getAmount().currency()))
         .type(mapTransactionType(transaction.getType()))
         .reference(transaction.getReference())
+        .userId(transaction.getUserId())
         .createdTimestamp(transaction.getCreatedTimestamp());
   }
 

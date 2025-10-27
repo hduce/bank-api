@@ -92,6 +92,7 @@ class TransactionControllerTest {
       assertThat(transactionResponse.getCurrency()).isEqualTo(TransactionResponse.CurrencyEnum.GBP);
       assertThat(transactionResponse.getType()).isEqualTo(TransactionResponse.TypeEnum.DEPOSIT);
       assertThat(transactionResponse.getReference()).isEqualTo("Test deposit");
+      assertThat(transactionResponse.getUserId()).isEqualTo(user.getId());
       assertThat(transactionResponse.getCreatedTimestamp()).isNotNull();
 
       // Verify account balance was updated
@@ -152,6 +153,7 @@ class TransactionControllerTest {
       assertThat(transactionResponse.getCurrency()).isEqualTo(TransactionResponse.CurrencyEnum.GBP);
       assertThat(transactionResponse.getType()).isEqualTo(TransactionResponse.TypeEnum.WITHDRAWAL);
       assertThat(transactionResponse.getReference()).isEqualTo("Test withdrawal");
+      assertThat(transactionResponse.getUserId()).isEqualTo(user.getId());
       assertThat(transactionResponse.getCreatedTimestamp()).isNotNull();
 
       // Verify account balance was updated
