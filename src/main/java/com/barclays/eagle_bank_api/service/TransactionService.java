@@ -52,6 +52,8 @@ public class TransactionService {
     switch (transactionType) {
       case DEPOSIT -> deposit(account, amount);
       case WITHDRAWAL -> withdraw(account, amount);
+      default ->
+          throw new IllegalArgumentException("Unsupported transaction type - " + transactionType);
     }
 
     accountRepository.save(account);
