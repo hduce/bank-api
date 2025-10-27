@@ -29,8 +29,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.retry:spring-retry")
-    implementation("org.flywaydb:flyway-core")
-    implementation("org.flywaydb:flyway-database-postgresql")
     implementation("jakarta.annotation:jakarta.annotation-api")
     implementation("org.openapitools:jackson-databind-nullable:0.2.6")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13")
