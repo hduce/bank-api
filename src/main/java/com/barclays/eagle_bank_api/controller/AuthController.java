@@ -25,6 +25,7 @@ public class AuthController implements AuthApi {
     final var user = authService.login(loginRequest.getEmail(), loginRequest.getPassword());
 
     final var token = jwtProvider.generateToken(user);
-    return new ResponseEntity<>(new LoginResponse(token), HttpStatus.OK);
+    final var response = new LoginResponse(token, user.getId());
+    return new ResponseEntity<>(response, HttpStatus.OK);
   }
 }

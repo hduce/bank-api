@@ -838,10 +838,15 @@ components:
       type: object
       required:
         - token
+        - userId
       properties:
         token:
           type: string
           description: JWT authentication token
+        userId:
+          type: string
+          pattern: ^usr-[A-Za-z0-9]+$
+          description: User ID of the authenticated user
     CreateUserRequest:
       type: object
       required:

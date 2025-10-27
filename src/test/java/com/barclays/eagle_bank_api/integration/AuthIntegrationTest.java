@@ -3,11 +3,11 @@ package com.barclays.eagle_bank_api.integration;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.barclays.eagle_bank_api.TestcontainersConfiguration;
+import com.barclays.eagle_bank_api.entity.User;
 import com.barclays.eagle_bank_api.model.CreateUserRequest;
 import com.barclays.eagle_bank_api.model.CreateUserRequestAddress;
 import com.barclays.eagle_bank_api.model.LoginRequest;
 import com.barclays.eagle_bank_api.model.LoginResponse;
-import com.barclays.eagle_bank_api.model.UserResponse;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -30,6 +30,7 @@ class AuthIntegrationTest {
 
   @Autowired private TestRestTemplate restTemplate;
   @Autowired private JdbcTemplate jdbcTemplate;
+  @Autowired private TestAuthHelper authHelper;
 
   @Value("${jwt.secret}")
   private String jwtSecret;
@@ -45,26 +46,26 @@ class AuthIntegrationTest {
   @Nested
   class Login {
 
+    private User createAndSaveUser(String password) {
+      return authHelper.createAndSaveUser("user@gmail.com", password);
+    }
+
     @Test
     void shouldLoginSuccessfullyWithValidCredentials() {
       // Given
-      var createRequest = buildCreateUserRequest();
-      var createResponse =
-          restTemplate.postForEntity("/v1/users", createRequest, UserResponse.class);
-      assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-      var createResponseBody = createResponse.getBody();
-      assertThat(createResponseBody).isNotNull();
+      var password = "SecurePassword123!";
+      var user = createAndSaveUser(password);
 
-      var loginRequest =
-          new LoginRequest().email(createRequest.getEmail()).password(createRequest.getPassword());
+      var loginRequest = new LoginRequest().email(user.getEmail()).password(password);
 
       // When
       var loginResponse =
           restTemplate.postForEntity("/v1/auth/login", loginRequest, LoginResponse.class);
 
-      // Then - Verify response
+      // Then
       assertThat(loginResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
       assertThat(loginResponse.getBody()).isNotNull();
+      assertThat(loginResponse.getBody().getUserId()).isEqualTo(user.getId());
       var token = loginResponse.getBody().getToken();
       assertThat(token).isNotNull().isNotEmpty();
 
@@ -73,7 +74,7 @@ class AuthIntegrationTest {
       var claims = Jwts.parser().verifyWith(signingKey).build().parseSignedClaims(token);
 
       // Verify token claims
-      assertThat(claims.getPayload().getSubject()).isEqualTo(createResponseBody.getId());
+      assertThat(claims.getPayload().getSubject()).isEqualTo(user.getId());
       assertThat(claims.getPayload().getExpiration()).isAfter(Date.from(Instant.now()));
       assertThat(claims.getPayload().getExpiration())
           .isBeforeOrEqualTo(Date.from(Instant.now().plusMillis(jwtExpirationMs + 1000)));
@@ -81,14 +82,11 @@ class AuthIntegrationTest {
 
     @Test
     void shouldFailToLoginWithWrongPassword() {
-      // Given - Create a user first
-      var createRequest = buildCreateUserRequest();
-      var createResponse =
-          restTemplate.postForEntity("/v1/users", createRequest, UserResponse.class);
-      assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+      // Given
+      var password = "SecurePassword123!";
+      var user = createAndSaveUser(password);
 
-      var loginRequest =
-          new LoginRequest().email(createRequest.getEmail()).password("WrongPassword123!");
+      var loginRequest = new LoginRequest().email(user.getEmail()).password("WrongPassword123!");
 
       // When
       var loginResponse = restTemplate.postForEntity("/v1/auth/login", loginRequest, String.class);

@@ -23,11 +23,15 @@ public class TestAuthHelper {
   }
 
   public User createAndSaveUser(String email) {
+    return createAndSaveUser(email, "Password123!");
+  }
+
+  public User createAndSaveUser(String email, String password) {
     return userRepository.save(
         User.builder()
             .name("Test User")
             .email(email)
-            .password(passwordEncoder.encode("Password123!"))
+            .password(passwordEncoder.encode(password))
             .phoneNumber("07988220214")
             .address(new Address("line1", "line2", "line3", "town", "county", "postcode"))
             .build());
