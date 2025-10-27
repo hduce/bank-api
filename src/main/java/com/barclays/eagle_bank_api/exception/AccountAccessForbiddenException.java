@@ -1,6 +1,6 @@
 package com.barclays.eagle_bank_api.exception;
 
-import com.barclays.eagle_bank_api.entity.AccountNumber;
+import com.barclays.eagle_bank_api.domain.AccountNumber;
 
 public class AccountAccessForbiddenException extends RuntimeException {
   public AccountAccessForbiddenException(AccountNumber accountNumber, String userId) {

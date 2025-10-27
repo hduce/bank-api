@@ -2,7 +2,7 @@ package com.barclays.eagle_bank_api.service;
 
 import com.barclays.eagle_bank_api.entity.User;
 import com.barclays.eagle_bank_api.exception.UserAlreadyExistsException;
-import com.barclays.eagle_bank_api.mapper.AddressMapper;
+import com.barclays.eagle_bank_api.mapper.AddressDtoMapper;
 import com.barclays.eagle_bank_api.model.CreateUserRequest;
 import com.barclays.eagle_bank_api.repository.UserRepository;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,13 +17,13 @@ public class AuthService {
   private final AuthenticationManager authenticationManager;
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
-  private final AddressMapper addressMapper;
+  private final AddressDtoMapper addressMapper;
 
   public AuthService(
       AuthenticationManager authenticationManager,
       UserRepository userRepository,
       PasswordEncoder passwordEncoder,
-      AddressMapper addressMapper) {
+      AddressDtoMapper addressMapper) {
     this.authenticationManager = authenticationManager;
     this.userRepository = userRepository;
     this.passwordEncoder = passwordEncoder;

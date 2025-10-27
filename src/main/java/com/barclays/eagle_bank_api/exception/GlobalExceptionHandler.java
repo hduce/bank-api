@@ -98,6 +98,28 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
   }
 
+  @ExceptionHandler(MissMatchedCurrencyException.class)
+  public ResponseEntity<ErrorResponse> handleMissMatchedCurrency(MissMatchedCurrencyException ex) {
+    var error = new ErrorResponse();
+    error.setMessage(ex.getMessage());
+    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error);
+  }
+
+  @ExceptionHandler(InsufficientFundsException.class)
+  public ResponseEntity<ErrorResponse> handleInsufficientFunds(InsufficientFundsException ex) {
+    var error = new ErrorResponse();
+    error.setMessage(ex.getMessage());
+    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error);
+  }
+
+  @ExceptionHandler(MaximumBalanceExceededException.class)
+  public ResponseEntity<ErrorResponse> handleMaximumBalanceExceeded(
+      MaximumBalanceExceededException ex) {
+    var error = new ErrorResponse();
+    error.setMessage(ex.getMessage());
+    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error);
+  }
+
   @ExceptionHandler(BadCredentialsException.class)
   public ResponseEntity<ErrorResponse> handleBadCredentials() {
     var error = new ErrorResponse();

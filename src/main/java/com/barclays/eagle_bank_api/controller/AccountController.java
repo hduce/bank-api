@@ -1,9 +1,9 @@
 package com.barclays.eagle_bank_api.controller;
 
 import com.barclays.eagle_bank_api.api.AccountApi;
-import com.barclays.eagle_bank_api.entity.AccountNumber;
+import com.barclays.eagle_bank_api.domain.AccountNumber;
 import com.barclays.eagle_bank_api.entity.User;
-import com.barclays.eagle_bank_api.mapper.AccountMapper;
+import com.barclays.eagle_bank_api.mapper.AccountDtoMapper;
 import com.barclays.eagle_bank_api.model.BankAccountResponse;
 import com.barclays.eagle_bank_api.model.CreateBankAccountRequest;
 import com.barclays.eagle_bank_api.model.ListBankAccountsResponse;
@@ -18,9 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class AccountController implements AccountApi {
 
   private final AccountService accountService;
-  private final AccountMapper accountMapper;
+  private final AccountDtoMapper accountMapper;
 
-  public AccountController(AccountService accountService, AccountMapper accountMapper) {
+  public AccountController(AccountService accountService, AccountDtoMapper accountMapper) {
     this.accountService = accountService;
     this.accountMapper = accountMapper;
   }

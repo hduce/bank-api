@@ -1,5 +1,6 @@
 package com.barclays.eagle_bank_api.entity;
 
+import com.barclays.eagle_bank_api.domain.Address;
 import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 import java.util.Collection;

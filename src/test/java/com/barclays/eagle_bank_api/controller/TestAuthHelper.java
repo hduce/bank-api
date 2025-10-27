@@ -1,6 +1,6 @@
 package com.barclays.eagle_bank_api.controller;
 
-import com.barclays.eagle_bank_api.entity.Address;
+import com.barclays.eagle_bank_api.domain.Address;
 import com.barclays.eagle_bank_api.entity.User;
 import com.barclays.eagle_bank_api.repository.UserRepository;
 import com.barclays.eagle_bank_api.security.JwtProvider;

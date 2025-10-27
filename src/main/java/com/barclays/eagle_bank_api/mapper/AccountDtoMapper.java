@@ -1,14 +1,14 @@
 package com.barclays.eagle_bank_api.mapper;
 
+import com.barclays.eagle_bank_api.domain.AccountType;
+import com.barclays.eagle_bank_api.domain.Currency;
+import com.barclays.eagle_bank_api.domain.SortCode;
 import com.barclays.eagle_bank_api.entity.Account;
-import com.barclays.eagle_bank_api.entity.AccountType;
-import com.barclays.eagle_bank_api.entity.Currency;
-import com.barclays.eagle_bank_api.entity.SortCode;
 import com.barclays.eagle_bank_api.model.BankAccountResponse;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AccountMapper {
+public class AccountDtoMapper {
 
   public BankAccountResponse toDto(Account account) {
     return new BankAccountResponse()

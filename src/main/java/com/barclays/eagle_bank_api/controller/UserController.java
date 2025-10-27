@@ -2,7 +2,7 @@ package com.barclays.eagle_bank_api.controller;
 
 import com.barclays.eagle_bank_api.api.UserApi;
 import com.barclays.eagle_bank_api.entity.User;
-import com.barclays.eagle_bank_api.mapper.AddressMapper;
+import com.barclays.eagle_bank_api.mapper.AddressDtoMapper;
 import com.barclays.eagle_bank_api.model.CreateUserRequest;
 import com.barclays.eagle_bank_api.model.UpdateUserRequest;
 import com.barclays.eagle_bank_api.model.UserResponse;
@@ -18,10 +18,10 @@ public class UserController implements UserApi {
 
   private final AuthService authService;
   private final UserService userService;
-  private final AddressMapper addressMapper;
+  private final AddressDtoMapper addressMapper;
 
   public UserController(
-      AuthService authService, UserService userService, AddressMapper addressMapper) {
+      AuthService authService, UserService userService, AddressDtoMapper addressMapper) {
     this.authService = authService;
     this.userService = userService;
     this.addressMapper = addressMapper;

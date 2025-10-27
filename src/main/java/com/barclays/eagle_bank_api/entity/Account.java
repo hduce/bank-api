@@ -1,5 +1,9 @@
 package com.barclays.eagle_bank_api.entity;
 
+import com.barclays.eagle_bank_api.domain.AccountNumber;
+import com.barclays.eagle_bank_api.domain.AccountType;
+import com.barclays.eagle_bank_api.domain.Amount;
+import com.barclays.eagle_bank_api.domain.SortCode;
 import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 import java.util.UUID;

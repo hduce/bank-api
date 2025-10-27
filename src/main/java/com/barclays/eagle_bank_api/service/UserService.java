@@ -4,7 +4,7 @@ import com.barclays.eagle_bank_api.entity.User;
 import com.barclays.eagle_bank_api.exception.CannotDeleteUserWithAccountsException;
 import com.barclays.eagle_bank_api.exception.UserEmailAlreadyExistsException;
 import com.barclays.eagle_bank_api.exception.UserNotFoundException;
-import com.barclays.eagle_bank_api.mapper.AddressMapper;
+import com.barclays.eagle_bank_api.mapper.AddressDtoMapper;
 import com.barclays.eagle_bank_api.model.UpdateUserRequest;
 import com.barclays.eagle_bank_api.repository.AccountRepository;
 import com.barclays.eagle_bank_api.repository.UserRepository;
@@ -15,13 +15,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
   private final UserRepository userRepository;
-  private final AddressMapper addressMapper;
+  private final AddressDtoMapper addressMapper;
   private final AccountRepository accountRepository;
 
   public UserService(
       UserRepository userRepository,
       AccountRepository accountRepository,
-      AddressMapper addressMapper) {
+      AddressDtoMapper addressMapper) {
     this.userRepository = userRepository;
     this.accountRepository = accountRepository;
     this.addressMapper = addressMapper;

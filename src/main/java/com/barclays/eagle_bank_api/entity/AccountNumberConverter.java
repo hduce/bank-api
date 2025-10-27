@@ -1,5 +1,6 @@
 package com.barclays.eagle_bank_api.entity;
 
+import com.barclays.eagle_bank_api.domain.AccountNumber;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 

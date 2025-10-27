@@ -3,8 +3,9 @@ package com.barclays.eagle_bank_api.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.barclays.eagle_bank_api.TestcontainersConfiguration;
-import com.barclays.eagle_bank_api.entity.AccountType;
-import com.barclays.eagle_bank_api.entity.Currency;
+import com.barclays.eagle_bank_api.domain.AccountNumber;
+import com.barclays.eagle_bank_api.domain.AccountType;
+import com.barclays.eagle_bank_api.domain.Currency;
 import com.barclays.eagle_bank_api.entity.User;
 import com.barclays.eagle_bank_api.model.BankAccountResponse;
 import com.barclays.eagle_bank_api.model.CreateBankAccountRequest;
@@ -402,8 +403,7 @@ class AccountControllerTest {
 
       // Verify database state
       var updatedAccount =
-          accountRepository.findByAccountNumber(
-              new com.barclays.eagle_bank_api.entity.AccountNumber(account.getAccountNumber()));
+          accountRepository.findByAccountNumber(new AccountNumber(account.getAccountNumber()));
       assertThat(updatedAccount).isPresent();
       assertThat(updatedAccount.get().getName()).isEqualTo("New Account Name");
     }

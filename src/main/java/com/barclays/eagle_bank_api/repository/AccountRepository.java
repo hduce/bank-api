@@ -1,7 +1,7 @@
 package com.barclays.eagle_bank_api.repository;
 
+import com.barclays.eagle_bank_api.domain.AccountNumber;
 import com.barclays.eagle_bank_api.entity.Account;
-import com.barclays.eagle_bank_api.entity.AccountNumber;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;

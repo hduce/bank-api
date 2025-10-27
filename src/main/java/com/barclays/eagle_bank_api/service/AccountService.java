@@ -1,9 +1,9 @@
 package com.barclays.eagle_bank_api.service;
 
+import com.barclays.eagle_bank_api.domain.AccountNumber;
+import com.barclays.eagle_bank_api.domain.AccountType;
+import com.barclays.eagle_bank_api.domain.Amount;
 import com.barclays.eagle_bank_api.entity.Account;
-import com.barclays.eagle_bank_api.entity.AccountNumber;
-import com.barclays.eagle_bank_api.entity.AccountType;
-import com.barclays.eagle_bank_api.entity.Amount;
 import com.barclays.eagle_bank_api.entity.User;
 import com.barclays.eagle_bank_api.exception.AccountAccessForbiddenException;
 import com.barclays.eagle_bank_api.exception.AccountNotFoundException;

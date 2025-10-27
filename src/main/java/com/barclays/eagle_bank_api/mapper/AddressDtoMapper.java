@@ -1,11 +1,11 @@
 package com.barclays.eagle_bank_api.mapper;
 
-import com.barclays.eagle_bank_api.entity.Address;
+import com.barclays.eagle_bank_api.domain.Address;
 import com.barclays.eagle_bank_api.model.CreateUserRequestAddress;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AddressMapper {
+public class AddressDtoMapper {
 
   public Address toEntity(CreateUserRequestAddress dto) {
     return new Address(
