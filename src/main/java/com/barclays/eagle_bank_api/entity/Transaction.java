@@ -10,6 +10,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Table(name = "transactions")
@@ -25,6 +27,7 @@ public class Transaction {
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "account_number", referencedColumnName = "account_number", nullable = false)
+  @OnDelete(action = OnDeleteAction.CASCADE)
   private Account account;
 
   @Enumerated(EnumType.STRING)

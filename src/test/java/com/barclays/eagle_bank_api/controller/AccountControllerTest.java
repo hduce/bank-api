@@ -9,9 +9,12 @@ import com.barclays.eagle_bank_api.domain.Currency;
 import com.barclays.eagle_bank_api.entity.User;
 import com.barclays.eagle_bank_api.model.BankAccountResponse;
 import com.barclays.eagle_bank_api.model.CreateBankAccountRequest;
+import com.barclays.eagle_bank_api.model.CreateTransactionRequest;
 import com.barclays.eagle_bank_api.model.ListBankAccountsResponse;
+import com.barclays.eagle_bank_api.model.TransactionResponse;
 import com.barclays.eagle_bank_api.model.UpdateBankAccountRequest;
 import com.barclays.eagle_bank_api.repository.AccountRepository;
+import com.barclays.eagle_bank_api.repository.TransactionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -32,6 +35,7 @@ class AccountControllerTest {
   @Autowired private TestRestTemplate restTemplate;
   @Autowired private JdbcTemplate jdbcTemplate;
   @Autowired private AccountRepository accountRepository;
+  @Autowired private TransactionRepository transactionRepository;
   @Autowired private TestAuthHelper testAuthHelper;
 
   @BeforeEach
@@ -537,6 +541,100 @@ class AccountControllerTest {
 
       // Then
       assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void shouldDeleteTransactionsWhenAccountIsDeleted() {
+      // Given
+      var user = createAndSaveUser();
+      var accountToDelete = createAccount(user, "Account To Delete");
+      var accountToKeep = createAccount(user, "Account To Keep");
+
+      // Create multiple transactions for the account to delete
+      var depositRequest1 =
+          new CreateTransactionRequest()
+              .amount(100.0)
+              .currency(CreateTransactionRequest.CurrencyEnum.GBP)
+              .type(CreateTransactionRequest.TypeEnum.DEPOSIT)
+              .reference("Deposit 1");
+      restTemplate.postForEntity(
+          "/v1/accounts/" + accountToDelete.getAccountNumber() + "/transactions",
+          new HttpEntity<>(depositRequest1, createAuthHeaders(user)),
+          TransactionResponse.class);
+
+      var depositRequest2 =
+          new CreateTransactionRequest()
+              .amount(50.0)
+              .currency(CreateTransactionRequest.CurrencyEnum.GBP)
+              .type(CreateTransactionRequest.TypeEnum.DEPOSIT)
+              .reference("Deposit 2");
+      restTemplate.postForEntity(
+          "/v1/accounts/" + accountToDelete.getAccountNumber() + "/transactions",
+          new HttpEntity<>(depositRequest2, createAuthHeaders(user)),
+          TransactionResponse.class);
+
+      var withdrawalRequest =
+          new CreateTransactionRequest()
+              .amount(30.0)
+              .currency(CreateTransactionRequest.CurrencyEnum.GBP)
+              .type(CreateTransactionRequest.TypeEnum.WITHDRAWAL)
+              .reference("Withdrawal 1");
+      restTemplate.postForEntity(
+          "/v1/accounts/" + accountToDelete.getAccountNumber() + "/transactions",
+          new HttpEntity<>(withdrawalRequest, createAuthHeaders(user)),
+          TransactionResponse.class);
+
+      // Create transactions for the account to keep
+      var keepDepositRequest =
+          new CreateTransactionRequest()
+              .amount(200.0)
+              .currency(CreateTransactionRequest.CurrencyEnum.GBP)
+              .type(CreateTransactionRequest.TypeEnum.DEPOSIT)
+              .reference("Keep Deposit");
+      restTemplate.postForEntity(
+          "/v1/accounts/" + accountToKeep.getAccountNumber() + "/transactions",
+          new HttpEntity<>(keepDepositRequest, createAuthHeaders(user)),
+          TransactionResponse.class);
+
+      // Verify transactions were created
+      var transactionsBeforeDelete =
+          transactionRepository.findByAccountAccountNumberOrderByCreatedTimestampAsc(
+              new AccountNumber(accountToDelete.getAccountNumber()));
+      assertThat(transactionsBeforeDelete).hasSize(3);
+
+      var keepTransactionsBeforeDelete =
+          transactionRepository.findByAccountAccountNumberOrderByCreatedTimestampAsc(
+              new AccountNumber(accountToKeep.getAccountNumber()));
+      assertThat(keepTransactionsBeforeDelete).hasSize(1);
+
+      // When - Delete the first account
+      var deleteResponse =
+          restTemplate.exchange(
+              "/v1/accounts/" + accountToDelete.getAccountNumber(),
+              HttpMethod.DELETE,
+              new HttpEntity<>(createAuthHeaders(user)),
+              Void.class);
+
+      // Then - Verify the deleted account is gone
+      assertThat(deleteResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+      var accounts = accountRepository.findByUserId(user.getId());
+      assertThat(accounts).hasSize(1);
+      assertThat(accounts.getFirst().getAccountNumber().value())
+          .isEqualTo(accountToKeep.getAccountNumber());
+
+      // Verify transactions for deleted account were cascade deleted
+      var transactionsAfterDelete =
+          transactionRepository.findByAccountAccountNumberOrderByCreatedTimestampAsc(
+              new AccountNumber(accountToDelete.getAccountNumber()));
+      assertThat(transactionsAfterDelete).isEmpty();
+
+      // Verify transactions for the kept account still exist
+      var keepTransactionsAfterDelete =
+          transactionRepository.findByAccountAccountNumberOrderByCreatedTimestampAsc(
+              new AccountNumber(accountToKeep.getAccountNumber()));
+      assertThat(keepTransactionsAfterDelete).hasSize(1);
+      assertThat(keepTransactionsAfterDelete.getFirst().getReference()).isEqualTo("Keep Deposit");
+      assertThat(keepTransactionsAfterDelete.getFirst().getAmount().value()).isEqualTo(200.0);
     }
   }
 }
