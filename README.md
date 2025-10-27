@@ -216,7 +216,6 @@ Database          → PostgreSQL
 - Test real behavior, not mocks
 - Catch integration issues early
 - Database constraints validated
-- Higher confidence in deployments
 - With more time would implement unit tests for more coverage on core logic
 
 **Why Postgres?**
@@ -302,16 +301,19 @@ All checks must pass before code can be merged to main.
 The project includes a Git pre-commit hook (`.git/hooks/pre-commit`) that automatically runs before each commit:
 
 **Checks performed:**
+
 1. **Code Formatting** - Runs `spotlessCheck` to ensure code style is consistent
 2. **Build & Tests** - Runs `./gradlew check` which includes compilation and all tests
 
 **What happens:**
+
 - If any check fails, the commit is blocked
 - You'll see clear error messages indicating what needs to be fixed
 - Run `./gradlew spotlessApply` to automatically fix formatting issues
 
 **Installing the hook:**
-The hook is already in `.git/hooks/pre-commit` and will run automatically. If you cloned the repo and it's not working, ensure it's executable:
+The hook is already in `.git/hooks/pre-commit` and will run automatically. If you cloned the repo and it's not working,
+ensure it's executable:
 
 ```bash
 chmod +x .git/hooks/pre-commit
