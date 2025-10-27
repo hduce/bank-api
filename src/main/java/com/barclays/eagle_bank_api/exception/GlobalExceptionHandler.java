@@ -4,6 +4,7 @@ import com.barclays.eagle_bank_api.model.BadRequestErrorResponse;
 import com.barclays.eagle_bank_api.model.BadRequestErrorResponseDetailsInner;
 import com.barclays.eagle_bank_api.model.ErrorResponse;
 import java.util.ArrayList;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -93,6 +95,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(AccountAccessForbiddenException.class)
   public ResponseEntity<ErrorResponse> handleAccountAccessForbidden(
       AccountAccessForbiddenException ex) {
+    log.warn("Forbidden access attempt: {}", ex.getMessage());
     var error = new ErrorResponse();
     error.setMessage(ex.getMessage());
     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
@@ -107,6 +110,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(InsufficientFundsException.class)
   public ResponseEntity<ErrorResponse> handleInsufficientFunds(InsufficientFundsException ex) {
+    log.warn("Insufficient funds: {}", ex.getMessage());
     var error = new ErrorResponse();
     error.setMessage(ex.getMessage());
     return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error);
@@ -158,7 +162,8 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(Exception.class)
-  public ResponseEntity<ErrorResponse> handleGenericException() {
+  public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
+    log.error("Unexpected error occurred", ex);
     var error = new ErrorResponse();
     error.setMessage("An unexpected error occurred");
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);

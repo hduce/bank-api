@@ -17,11 +17,13 @@ import com.barclays.eagle_bank_api.repository.AccountRepository;
 import com.barclays.eagle_bank_api.repository.TransactionRepository;
 import jakarta.persistence.OptimisticLockException;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 public class TransactionService {
 
@@ -92,17 +94,28 @@ public class TransactionService {
   private void deposit(Account account, Amount amount) {
     var newBalance = account.getBalance().add(amount);
     if (newBalance.isGreaterThan(MAX_ACCOUNT_BALANCE)) {
+      log.warn(
+          "Deposit of {} would exceed maximum balance for account {}",
+          amount.value(),
+          account.getAccountNumber());
       throw new MaximumBalanceExceededException(
           account.getAccountNumber(), amount, account.getBalance(), MAX_ACCOUNT_BALANCE);
     }
+    log.debug("Depositing {} to account {}", amount.value(), account.getAccountNumber());
     account.setBalance(newBalance);
   }
 
   private void withdraw(Account account, Amount amount) {
     if (amount.isGreaterThan(account.getBalance())) {
+      log.warn(
+          "Insufficient funds for withdrawal of {} from account {} (balance: {})",
+          amount.value(),
+          account.getAccountNumber(),
+          account.getBalance().value());
       throw new InsufficientFundsException(
           account.getAccountNumber(), amount, account.getBalance());
     }
+    log.debug("Withdrawing {} from account {}", amount.value(), account.getAccountNumber());
     account.setBalance(account.getBalance().subtract(amount));
   }
 
