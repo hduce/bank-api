@@ -45,7 +45,12 @@ public class TransactionController implements TransactionApi {
 
   @Override
   public ResponseEntity<ListTransactionsResponse> listAccountTransaction(String accountNumber) {
-    throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Not implemented");
+    var user = getAuthenticatedUser();
+    var transactions = transactionService.listTransactions(new AccountNumber(accountNumber), user);
+    var response =
+        new ListTransactionsResponse()
+            .transactions(transactions.stream().map(transactionMapper::toDto).toList());
+    return ResponseEntity.ok(response);
   }
 
   private User getAuthenticatedUser() {

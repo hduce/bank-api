@@ -15,6 +15,7 @@ import com.barclays.eagle_bank_api.model.CreateTransactionRequest;
 import com.barclays.eagle_bank_api.repository.AccountRepository;
 import com.barclays.eagle_bank_api.repository.TransactionRepository;
 import jakarta.persistence.OptimisticLockException;
+import java.util.List;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -62,6 +63,13 @@ public class TransactionService {
             .build();
 
     return transactionRepository.save(transaction);
+  }
+
+  public List<Transaction> listTransactions(AccountNumber accountNumber, User user) {
+    var account = accountService.getAccountByAccountNumber(accountNumber, user);
+
+    return transactionRepository.findByAccountAccountNumberOrderByCreatedTimestampAsc(
+        account.getAccountNumber());
   }
 
   private void deposit(Account account, Amount amount) {

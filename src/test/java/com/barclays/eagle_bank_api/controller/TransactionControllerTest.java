@@ -460,4 +460,148 @@ class TransactionControllerTest {
       assertThat(transactions.get(3).getReference()).isEqualTo("Third deposit");
     }
   }
+
+  @Nested
+  class ListTransactions {
+
+    @Test
+    void shouldListAllTransactionsForAccount() {
+      // Given
+      var user = createAndSaveUser("user@example.com");
+      var account = createAccount(user, "Test Account");
+
+      // Create multiple transactions
+      var deposit1 = new CreateTransactionRequest();
+      deposit1.setAmount(100.00);
+      deposit1.setCurrency(CreateTransactionRequest.CurrencyEnum.GBP);
+      deposit1.setType(CreateTransactionRequest.TypeEnum.DEPOSIT);
+      deposit1.setReference("First deposit");
+      restTemplate.postForEntity(
+          "/v1/accounts/{accountNumber}/transactions",
+          new HttpEntity<>(deposit1, createAuthHeaders(user)),
+          TransactionResponse.class,
+          account.getAccountNumber());
+
+      var deposit2 = new CreateTransactionRequest();
+      deposit2.setAmount(50.00);
+      deposit2.setCurrency(CreateTransactionRequest.CurrencyEnum.GBP);
+      deposit2.setType(CreateTransactionRequest.TypeEnum.DEPOSIT);
+      deposit2.setReference("Second deposit");
+      restTemplate.postForEntity(
+          "/v1/accounts/{accountNumber}/transactions",
+          new HttpEntity<>(deposit2, createAuthHeaders(user)),
+          TransactionResponse.class,
+          account.getAccountNumber());
+
+      var withdrawal = new CreateTransactionRequest();
+      withdrawal.setAmount(30.00);
+      withdrawal.setCurrency(CreateTransactionRequest.CurrencyEnum.GBP);
+      withdrawal.setType(CreateTransactionRequest.TypeEnum.WITHDRAWAL);
+      withdrawal.setReference("First withdrawal");
+      restTemplate.postForEntity(
+          "/v1/accounts/{accountNumber}/transactions",
+          new HttpEntity<>(withdrawal, createAuthHeaders(user)),
+          TransactionResponse.class,
+          account.getAccountNumber());
+
+      // When
+      var response =
+          restTemplate.exchange(
+              "/v1/accounts/{accountNumber}/transactions",
+              org.springframework.http.HttpMethod.GET,
+              new HttpEntity<>(createAuthHeaders(user)),
+              com.barclays.eagle_bank_api.model.ListTransactionsResponse.class,
+              account.getAccountNumber());
+
+      // Then
+      assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+      assertThat(response.getBody()).isNotNull();
+      assertThat(response.getBody().getTransactions()).hasSize(3);
+
+      var transactions = response.getBody().getTransactions();
+      assertThat(transactions.getFirst().getAmount()).isEqualTo(100.00);
+      assertThat(transactions.getFirst().getType()).isEqualTo(TransactionResponse.TypeEnum.DEPOSIT);
+      assertThat(transactions.getFirst().getReference()).isEqualTo("First deposit");
+      assertThat(transactions.getFirst().getUserId()).isEqualTo(user.getId());
+
+      assertThat(transactions.get(1).getAmount()).isEqualTo(50.00);
+      assertThat(transactions.get(1).getType()).isEqualTo(TransactionResponse.TypeEnum.DEPOSIT);
+      assertThat(transactions.get(1).getReference()).isEqualTo("Second deposit");
+
+      assertThat(transactions.get(2).getAmount()).isEqualTo(30.00);
+      assertThat(transactions.get(2).getType()).isEqualTo(TransactionResponse.TypeEnum.WITHDRAWAL);
+      assertThat(transactions.get(2).getReference()).isEqualTo("First withdrawal");
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenNoTransactions() {
+      // Given
+      var user = createAndSaveUser("user@example.com");
+      var account = createAccount(user, "Test Account");
+
+      // When
+      var response =
+          restTemplate.exchange(
+              "/v1/accounts/{accountNumber}/transactions",
+              org.springframework.http.HttpMethod.GET,
+              new HttpEntity<>(createAuthHeaders(user)),
+              com.barclays.eagle_bank_api.model.ListTransactionsResponse.class,
+              account.getAccountNumber());
+
+      // Then
+      assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+      assertThat(response.getBody()).isNotNull();
+      assertThat(response.getBody().getTransactions()).isEmpty();
+    }
+
+    @Test
+    void shouldReturnForbiddenWhenAccessingAnotherUsersAccountTransactions() {
+      // Given
+      var user1 = createAndSaveUser("user1@example.com");
+      var user2 = createAndSaveUser("user2@example.com");
+      var user1Account = createAccount(user1, "User 1 Account");
+
+      // Create a transaction for user1
+      var deposit = new CreateTransactionRequest();
+      deposit.setAmount(100.00);
+      deposit.setCurrency(CreateTransactionRequest.CurrencyEnum.GBP);
+      deposit.setType(CreateTransactionRequest.TypeEnum.DEPOSIT);
+      restTemplate.postForEntity(
+          "/v1/accounts/{accountNumber}/transactions",
+          new HttpEntity<>(deposit, createAuthHeaders(user1)),
+          TransactionResponse.class,
+          user1Account.getAccountNumber());
+
+      // When
+      var response =
+          restTemplate.exchange(
+              "/v1/accounts/{accountNumber}/transactions",
+              org.springframework.http.HttpMethod.GET,
+              new HttpEntity<>(createAuthHeaders(user2)),
+              String.class,
+              user1Account.getAccountNumber());
+
+      // Then
+      assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenAccountDoesNotExist() {
+      // Given
+      var user = createAndSaveUser("user@example.com");
+      var nonExistentAccountNumber = "01999999";
+
+      // When
+      var response =
+          restTemplate.exchange(
+              "/v1/accounts/{accountNumber}/transactions",
+              org.springframework.http.HttpMethod.GET,
+              new HttpEntity<>(createAuthHeaders(user)),
+              String.class,
+              nonExistentAccountNumber);
+
+      // Then
+      assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+  }
 }
