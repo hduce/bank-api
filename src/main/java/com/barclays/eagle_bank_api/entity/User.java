@@ -1,7 +1,12 @@
 package com.barclays.eagle_bank_api.entity;
 
 import com.barclays.eagle_bank_api.domain.Address;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
