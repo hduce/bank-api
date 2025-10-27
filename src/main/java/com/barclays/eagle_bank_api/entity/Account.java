@@ -63,4 +63,8 @@ public class Account {
   @UpdateTimestamp
   @Column(name = "updated_timestamp", nullable = false)
   private OffsetDateTime updatedTimestamp;
+
+  @Version
+  @Column(name = "version", nullable = false)
+  private Long version;
 }

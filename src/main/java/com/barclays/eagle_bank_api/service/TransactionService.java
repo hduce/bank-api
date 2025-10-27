@@ -14,6 +14,9 @@ import com.barclays.eagle_bank_api.exception.MaximumBalanceExceededException;
 import com.barclays.eagle_bank_api.model.CreateTransactionRequest;
 import com.barclays.eagle_bank_api.repository.AccountRepository;
 import com.barclays.eagle_bank_api.repository.TransactionRepository;
+import jakarta.persistence.OptimisticLockException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +37,10 @@ public class TransactionService {
   }
 
   @Transactional
+  @Retryable(
+      retryFor = OptimisticLockException.class,
+      maxAttempts = 3,
+      backoff = @Backoff(delay = 100))
   public Transaction createTransaction(
       AccountNumber accountNumber, CreateTransactionRequest request, User user) {
     var account = accountService.getAccountByAccountNumber(accountNumber, user);

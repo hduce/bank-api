@@ -99,6 +99,7 @@ class TransactionControllerTest {
           accountRepository.findByAccountNumber(new AccountNumber(account.getAccountNumber()));
       assertThat(updatedAccount).isPresent();
       assertThat(updatedAccount.get().getBalance().value()).isEqualTo(50.00);
+      assertThat(updatedAccount.get().getVersion()).isEqualTo(1);
 
       // Verify transaction was persisted
       var persistedTransaction = transactionRepository.findById(transactionResponse.getId());
@@ -158,6 +159,7 @@ class TransactionControllerTest {
           accountRepository.findByAccountNumber(new AccountNumber(account.getAccountNumber()));
       assertThat(updatedAccount).isPresent();
       assertThat(updatedAccount.get().getBalance().value()).isEqualTo(70.00);
+      assertThat(updatedAccount.get().getVersion()).isEqualTo(2);
 
       // Verify transaction was persisted
       var persistedTransaction = transactionRepository.findById(transactionResponse.getId());
@@ -430,6 +432,7 @@ class TransactionControllerTest {
           accountRepository.findByAccountNumber(new AccountNumber(account.getAccountNumber()));
       assertThat(updatedAccount).isPresent();
       assertThat(updatedAccount.get().getBalance().value()).isEqualTo(195.00);
+      assertThat(updatedAccount.get().getVersion()).isEqualTo(4);
 
       // Verify all 4 transactions were persisted
       var transactions =
