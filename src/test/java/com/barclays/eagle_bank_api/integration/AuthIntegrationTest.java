@@ -4,8 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.barclays.eagle_bank_api.TestcontainersConfiguration;
 import com.barclays.eagle_bank_api.entity.User;
-import com.barclays.eagle_bank_api.model.CreateUserRequest;
-import com.barclays.eagle_bank_api.model.CreateUserRequestAddress;
 import com.barclays.eagle_bank_api.model.LoginRequest;
 import com.barclays.eagle_bank_api.model.LoginResponse;
 import io.jsonwebtoken.Jwts;
@@ -107,23 +105,5 @@ class AuthIntegrationTest {
       // Then
       assertThat(loginResponse.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
-  }
-
-  private CreateUserRequest buildCreateUserRequest() {
-    return new CreateUserRequest()
-        .name("John Doe")
-        .email("john.doe@example.com")
-        .password("SecurePassword123!")
-        .phoneNumber("+441234567890")
-        .address(buildAddress());
-  }
-
-  private CreateUserRequestAddress buildAddress() {
-    return new CreateUserRequestAddress()
-        .line1("123 Main Street")
-        .line2("Apt 4B")
-        .town("London")
-        .county("Greater London")
-        .postcode("SW1A 1AA");
   }
 }
