@@ -11,6 +11,7 @@ import com.barclays.eagle_bank_api.entity.Transaction;
 import com.barclays.eagle_bank_api.entity.User;
 import com.barclays.eagle_bank_api.exception.InsufficientFundsException;
 import com.barclays.eagle_bank_api.exception.MaximumBalanceExceededException;
+import com.barclays.eagle_bank_api.exception.TransactionNotFoundException;
 import com.barclays.eagle_bank_api.model.CreateTransactionRequest;
 import com.barclays.eagle_bank_api.repository.AccountRepository;
 import com.barclays.eagle_bank_api.repository.TransactionRepository;
@@ -70,6 +71,22 @@ public class TransactionService {
 
     return transactionRepository.findByAccountAccountNumberOrderByCreatedTimestampAsc(
         account.getAccountNumber());
+  }
+
+  public Transaction getTransactionById(
+      AccountNumber accountNumber, String transactionId, User user) {
+    var account = accountService.getAccountByAccountNumber(accountNumber, user);
+
+    var transaction =
+        transactionRepository
+            .findById(transactionId)
+            .orElseThrow(() -> new TransactionNotFoundException(transactionId, accountNumber));
+
+    if (!transaction.getAccount().getAccountNumber().equals(account.getAccountNumber())) {
+      throw new TransactionNotFoundException(transactionId, accountNumber);
+    }
+
+    return transaction;
   }
 
   private void deposit(Account account, Amount amount) {

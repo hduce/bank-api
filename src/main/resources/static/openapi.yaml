@@ -429,7 +429,7 @@ paths:
           required: true
           schema:
             type: string
-            pattern: ^tan-[A-Za-z0-9]$
+            pattern: ^tan-[A-Za-z0-9]+$
       security:
         - bearerAuth: [ ]
       responses:
@@ -795,7 +795,7 @@ components:
       properties:
         id:
           type: string
-          pattern: ^tan-[A-Za-z0-9]$
+          pattern: ^tan-[A-Za-z0-9]+$
           examples:
             - tan-123abc
         amount:

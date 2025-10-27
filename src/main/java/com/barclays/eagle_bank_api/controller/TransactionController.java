@@ -8,12 +8,10 @@ import com.barclays.eagle_bank_api.model.CreateTransactionRequest;
 import com.barclays.eagle_bank_api.model.ListTransactionsResponse;
 import com.barclays.eagle_bank_api.model.TransactionResponse;
 import com.barclays.eagle_bank_api.service.TransactionService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 public class TransactionController implements TransactionApi {
@@ -40,7 +38,11 @@ public class TransactionController implements TransactionApi {
   @Override
   public ResponseEntity<TransactionResponse> fetchAccountTransactionByID(
       String accountNumber, String transactionId) {
-    throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Not implemented");
+    var user = getAuthenticatedUser();
+    var transaction =
+        transactionService.getTransactionById(
+            new AccountNumber(accountNumber), transactionId, user);
+    return ResponseEntity.ok(transactionMapper.toDto(transaction));
   }
 
   @Override

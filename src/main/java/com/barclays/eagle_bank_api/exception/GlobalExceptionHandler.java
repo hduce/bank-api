@@ -150,6 +150,13 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
   }
 
+  @ExceptionHandler(TransactionNotFoundException.class)
+  public ResponseEntity<ErrorResponse> handleTransactionNotFound(TransactionNotFoundException ex) {
+    var error = new ErrorResponse();
+    error.setMessage(ex.getMessage());
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+  }
+
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ErrorResponse> handleGenericException() {
     var error = new ErrorResponse();
