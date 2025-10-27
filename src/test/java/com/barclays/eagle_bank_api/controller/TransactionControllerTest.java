@@ -1,6 +1,7 @@
 package com.barclays.eagle_bank_api.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.barclays.eagle_bank_api.TestcontainersConfiguration;
 import com.barclays.eagle_bank_api.domain.AccountNumber;
@@ -11,7 +12,6 @@ import com.barclays.eagle_bank_api.model.CreateTransactionRequest;
 import com.barclays.eagle_bank_api.model.TransactionResponse;
 import com.barclays.eagle_bank_api.repository.AccountRepository;
 import com.barclays.eagle_bank_api.repository.TransactionRepository;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -629,6 +629,7 @@ class TransactionControllerTest {
               TransactionResponse.class,
               account.getAccountNumber());
 
+      assertNotNull(createResponse.getBody());
       var transactionId = createResponse.getBody().getId();
 
       // When
@@ -675,6 +676,7 @@ class TransactionControllerTest {
               TransactionResponse.class,
               user1Account.getAccountNumber());
 
+      assertNotNull(createResponse.getBody());
       var transactionId = createResponse.getBody().getId();
 
       // When
@@ -752,7 +754,7 @@ class TransactionControllerTest {
               new HttpEntity<>(depositRequest, createAuthHeaders(user)),
               TransactionResponse.class,
               account1.getAccountNumber());
-      Assertions.assertNotNull(createResponse.getBody());
+      assertNotNull(createResponse.getBody());
       var transactionId = createResponse.getBody().getId();
 
       // When
