@@ -8,7 +8,7 @@ plugins {
     id("org.sonarqube") version "7.0.1.6134"
 }
 
-group = "com.barclays"
+group = "com.hduce"
 version = "0.0.1-SNAPSHOT"
 description =
     "REST API for Eagle Bank - A banking system supporting user management, account operations, and transaction processing with JWT authentication"
@@ -63,8 +63,8 @@ openApiGenerate {
     generatorName.set("spring")
     inputSpec.set("$rootDir/src/main/resources/static/openapi.yaml")
     outputDir.set(layout.buildDirectory.dir("generated").get().asFile.path)
-    apiPackage.set("com.barclays.eagle_bank_api.api")
-    modelPackage.set("com.barclays.eagle_bank_api.model")
+    apiPackage.set("com.hduce.eagle_bank_api.api")
+    modelPackage.set("com.hduce.eagle_bank_api.model")
     configOptions.set(
         mapOf(
             "interfaceOnly" to "true",

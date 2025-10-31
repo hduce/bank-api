@@ -155,7 +155,7 @@ The project uses **integration tests** with Testcontainers:
 - Tests use real PostgreSQL database (via Testcontainers)
 - Full request-response cycle testing
 - Database state verification
-- Tests are located in `src/test/java/com/barclays/eagle_bank_api/integration/`
+- Tests are located in `src/test/java/com/hduce/eagle_bank_api/integration/`
 
 ### Test Coverage
 
@@ -237,7 +237,7 @@ Database          → PostgreSQL
 ## Project Structure
 
 ```
-src/main/java/com/barclays/eagle_bank_api/
+src/main/java/com/hduce/eagle_bank_api/
 ├── api/              # Generated API interfaces (from OpenAPI)
 ├── model/            # Generated DTOs (from OpenAPI)
 ├── controller/       # REST controllers (implement generated APIs)
@@ -254,7 +254,7 @@ src/main/resources/
 │   └── openapi.yaml  # API specification (source of truth)
 └── application.properties
 
-src/test/java/com/barclays/eagle_bank_api/
+src/test/java/com/hduce/eagle_bank_api/
 └── integration/      # Integration tests
 
 postman/
