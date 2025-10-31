@@ -1,0 +1,75 @@
+package com.hduce.bank_api.entity;
+
+import com.hduce.bank_api.domain.Amount;
+import com.hduce.bank_api.domain.TransactionType;
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.AttributeOverrides;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+import java.time.OffsetDateTime;
+import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
+@Entity
+@Table(
+    name = "transactions",
+    indexes = {@Index(name = "idx_transactions_account_number", columnList = "account_number")})
+@Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class Transaction {
+
+  @Id
+  @Column(name = "id", nullable = false)
+  private String id;
+
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "account_number", referencedColumnName = "account_number", nullable = false)
+  @OnDelete(action = OnDeleteAction.CASCADE)
+  private Account account;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "type", nullable = false)
+  private TransactionType type;
+
+  @Embedded
+  @AttributeOverrides({
+    @AttributeOverride(name = "value", column = @Column(name = "amount", nullable = false)),
+    @AttributeOverride(name = "currency", column = @Column(name = "currency", nullable = false))
+  })
+  private Amount amount;
+
+  @Column(name = "reference")
+  private String reference;
+
+  @Column(name = "user_id", nullable = false)
+  private String userId;
+
+  @CreationTimestamp
+  @Column(name = "created_timestamp", nullable = false, updatable = false)
+  private OffsetDateTime createdTimestamp;
+
+  @PrePersist
+  private void generateId() {
+    if (this.id == null) {
+      this.id = "tan-" + UUID.randomUUID().toString().replace("-", "");
+    }
+  }
+}

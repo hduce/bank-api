@@ -105,7 +105,7 @@ jobs:
           echo "🚀 Preparing deployment to production..."
           echo "=========================================="
           echo ""
-          echo "✅ Build artifact created: build/libs/eagle-bank-api-*.jar"
+          echo "✅ Build artifact created: build/libs/bank-api-*.jar"
           echo "✅ Running pre-deployment checks..."
           sleep 2
           echo "✅ Pre-deployment checks passed"
@@ -141,5 +141,5 @@ jobs:
 
       - name: Post-deployment notification
         run: |
-          echo "🎉 Eagle Bank API deployed successfully!"
+          echo "🎉 Bank API deployed successfully!"
           echo "Ready to serve customers with the latest features."

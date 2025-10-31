@@ -1,6 +1,6 @@
-# Eagle Bank API - E2E Test Collection
+# Bank API - E2E Test Collection
 
-This Postman collection provides comprehensive end-to-end testing of the Eagle Bank API, exercising all major features.
+This Postman collection provides comprehensive end-to-end testing of the Bank API, exercising all major features.
 
 ## What It Tests
 
@@ -17,14 +17,14 @@ The collection includes 16 requests that test the complete user journey:
 
 1. Open Postman
 2. Click **Import** button (top left)
-3. Select the file: `postman/eagle-bank-e2e.postman_collection.json`
+3. Select the file: `postman/bank-e2e.postman_collection.json`
 4. The collection will appear in your Collections sidebar
 
 ## How to Run
 
 ### Prerequisites
 
-Make sure the Eagle Bank API is running locally:
+Make sure the Bank API is running locally:
 
 ```bash
 ./gradlew bootRun        # Start the application
@@ -34,11 +34,11 @@ The API should be running at `http://localhost:8080`
 
 ### Running the Collection
 
-1. Select the **Eagle Bank API - E2E Tests** collection in Postman
+1. Select the **Bank API - E2E Tests** collection in Postman
 2. Click the **Run** button (or right-click → Run collection)
 3. In the Collection Runner:
     - Ensure all requests are selected
-    - Click **Run Eagle Bank API - E2E Tests**
+    - Click **Run Bank API - E2E Tests**
 4. Watch the tests execute in order
 
 ### Configuration

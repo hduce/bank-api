@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "Eagle Bank API - E2E Tests",
-    "description": "Comprehensive end-to-end test suite for Eagle Bank API covering user management, authentication, accounts, and transactions",
+    "name": "Bank API - E2E Tests",
+    "description": "Comprehensive end-to-end test suite for Bank API covering user management, authentication, accounts, and transactions",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [

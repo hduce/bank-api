@@ -1,11 +1,11 @@
-# Eagle Bank API
+# Bank Account API
 
 A RESTful banking API built with Spring Boot 3.5.6 and Java 21, implementing user management, bank accounts, and
 transaction processing with JWT authentication.
 
 ## Table of Contents
 
-- [Requirements Implemented](#requirements-implemented)
+- [Features](#features)
 - [Quick Start](#quick-start)
 - [API Documentation](#api-documentation)
 - [Authentication](#authentication)
@@ -13,38 +13,29 @@ transaction processing with JWT authentication.
 - [Architecture](#architecture)
 - [Project Structure](#project-structure)
 
-## Requirements Implemented
+## Features
 
-All required functionality has been implemented:
+Bank API provides a complete banking backend with secure user management, multi-account support, and transaction processing.
 
 ### Security & Authorization
 
-- ✅ User login with JWT token generation (POST `/v1/auth/login`)
-- ✅ JWT-based authentication
-- ✅ All endpoints (except registration) require authentication
-- ✅ Users can only access their own resources
-- ✅ Users authenticate using email and password
+The API implements JWT-based authentication with secure password hashing (BCrypt). All endpoints except user registration require authentication, and users can only access their own resources. Token-based sessions expire after 1 hour for security.
 
 ### User Management
 
-- ✅ Create user (POST `/v1/users`)
-- ✅ Fetch user details (GET `/v1/users/{userId}`)
-- ✅ Update user details (PATCH `/v1/users/{userId}`)
-- ✅ Delete user (DELETE `/v1/users/{userId}`)
+Users can register with email/password credentials along with personal details including name, phone number, and address. The API supports full CRUD operations: creating new users, fetching user details, updating profile information, and account deletion. Each user receives a unique identifier (`usr-{uuid}` format) upon registration.
 
 ### Bank Account Management
 
-- ✅ Create bank account (POST `/v1/accounts`)
-- ✅ List user's accounts (GET `/v1/accounts`)
-- ✅ Fetch account details (GET `/v1/accounts/{accountNumber}`)
-- ✅ Update account name (PATCH `/v1/accounts/{accountNumber}`)
-- ✅ Delete account (DELETE `/v1/accounts/{accountNumber}`)
+Each user can manage multiple bank accounts with customizable names. Accounts are identified by unique 8-digit account numbers (format: `01XXXXXX`) and track balances in real-time. The API provides endpoints to create accounts, list all accounts for a user, fetch individual account details, update account names, and delete accounts (with validation to prevent deletion of accounts with non-zero balances).
 
 ### Transaction Processing
 
-- ✅ Create transaction (deposit/withdrawal) (POST `/v1/accounts/{accountNumber}/transactions`)
-- ✅ List account transactions (GET `/v1/accounts/{accountNumber}/transactions`)
-- ✅ Fetch transaction details (GET `/v1/accounts/{accountNumber}/transactions/{transactionId}`)
+The API supports two transaction types: deposits and withdrawals. All transactions are recorded with unique identifiers (`tan-{uuid}` format), timestamps, and running balance calculations. Business rules enforce:
+- Withdrawals cannot exceed available balance
+- All monetary values are validated for precision
+- Transaction history is maintained and queryable per account
+- Balances are updated atomically to ensure consistency
 
 ## Quick Start
 
@@ -155,7 +146,7 @@ The project uses **integration tests** with Testcontainers:
 - Tests use real PostgreSQL database (via Testcontainers)
 - Full request-response cycle testing
 - Database state verification
-- Tests are located in `src/test/java/com/hduce/eagle_bank_api/integration/`
+- Tests are located in `src/test/java/com/hduce/bank_api/integration/`
 
 ### Test Coverage
 
@@ -202,42 +193,10 @@ Database          → PostgreSQL
 - **Testing:** JUnit 5, Testcontainers, Spring Boot Test
 - **API Spec:** OpenAPI 3.1
 
-### Key Design Decisions
-
-**Why API-First?**
-
-- Contract provided in tech task becomes source of truth
-- Type-safe implementation
-- Frontend/backend can work from same contract
-- Validation defined once in OpenAPI spec
-
-**Why Integration Tests?**
-
-- Test real behavior, not mocks
-- Catch integration issues early
-- Database constraints validated
-- With more time would implement unit tests for more coverage on core logic
-
-**Why Postgres?**
-
-- Robust, production-ready relational database
-- Familiarity and widespread use
-- Strong support in Spring Data JPA
-- Easy to run locally with Docker
-- Supports complex queries and transactions needed for banking app
-- Scales well for future growth
-
-**Why Spring?**
-
-- Mature, widely-used Java framework
-- Excellent support for REST APIs, security, data access
-- Large ecosystem and community
-- Rapid development with Spring Boot conventions
-
 ## Project Structure
 
 ```
-src/main/java/com/hduce/eagle_bank_api/
+src/main/java/com/hduce/bank_api/
 ├── api/              # Generated API interfaces (from OpenAPI)
 ├── model/            # Generated DTOs (from OpenAPI)
 ├── controller/       # REST controllers (implement generated APIs)
@@ -254,11 +213,11 @@ src/main/resources/
 │   └── openapi.yaml  # API specification (source of truth)
 └── application.properties
 
-src/test/java/com/hduce/eagle_bank_api/
+src/test/java/com/hduce/bank_api/
 └── integration/      # Integration tests
 
 postman/
-├── eagle-bank-e2e.postman_collection.json  # E2E test collection
+├── bank-e2e.postman_collection.json  # E2E test collection
 └── README.md         # Postman usage instructions
 ```
 

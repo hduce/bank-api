@@ -3,7 +3,7 @@ info:
   title: Take home tech task
   version: v1.0.0
   description: |-
-    We want you to create a REST API for Eagle Bank which conforms to this OpenAPI specification which allows a user to create, fetch, update and delete a bank account and deposit or withdraw money from the account. These will be stored as transactions against a bank account which be retrieved but not modified or deleted.
+    We want you to create a REST API for Bank which conforms to this OpenAPI specification which allows a user to create, fetch, update and delete a bank account and deposit or withdraw money from the account. These will be stored as transactions against a bank account which be retrieved but not modified or deleted.
 tags:
   - name: account
     description: Manage a bank account

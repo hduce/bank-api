@@ -1,1 +1,1 @@
-rootProject.name = "eagle-bank-api"
+rootProject.name = "bank-api"
